@@ -1,6 +1,137 @@
 import { FastifyInstance } from 'fastify';
+import { ZodTypeProvider } from 'fastify-type-provider-zod';
+import {
+  DashboardQuerySchema,
+  MonthlyTrendQuerySchema,
+} from '../validators/schemas';
 
-export async function dashboardRoutes(fastify: FastifyInstance): Promise<void> {
-  // Will be implemented in the dashboard epic
-  fastify.get('/health', async () => ({ route: 'dashboard', status: 'ok' }));
+export async function dashboardRoutes(
+  fastify: FastifyInstance,
+): Promise<void> {
+  const app = fastify.withTypeProvider<ZodTypeProvider>();
+
+  // GET /api/dashboard/summary — Total income, expenses, net balance
+  app.get(
+    '/summary',
+    {
+      schema: {
+        querystring: DashboardQuerySchema,
+      },
+    },
+    async (request) => {
+      const { from, to } = request.query;
+      const knex = fastify.knex;
+
+      let query = knex('transactions');
+
+      if (from) {
+        query = query.where('date', '>=', from);
+      }
+      if (to) {
+        query = query.where('date', '<=', to);
+      }
+
+      // If no date filters, default to current month
+      if (!from && !to) {
+        const now = new Date();
+        const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const firstOfMonthStr = firstOfMonth.toISOString().split('T')[0];
+        query = query.where('date', '>=', firstOfMonthStr);
+      }
+
+      const result = await query.select(
+        knex.raw(
+          "COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) as \"totalIncome\"",
+        ),
+        knex.raw(
+          "COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) as \"totalExpenses\"",
+        ),
+        knex.raw(
+          "COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE -amount END), 0) as \"netBalance\"",
+        ),
+      );
+
+      return result[0];
+    },
+  );
+
+  // GET /api/dashboard/monthly-trend — Income vs expenses per month
+  app.get(
+    '/monthly-trend',
+    {
+      schema: {
+        querystring: MonthlyTrendQuerySchema,
+      },
+    },
+    async (request) => {
+      const { months } = request.query;
+      const knex = fastify.knex;
+
+      const result = await knex('transactions')
+        .select(
+          knex.raw("TO_CHAR(date, 'YYYY-MM') as month"),
+          knex.raw(
+            "COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) as income",
+          ),
+          knex.raw(
+            "COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) as expenses",
+          ),
+        )
+        .where(
+          'date',
+          '>=',
+          knex.raw(`CURRENT_DATE - INTERVAL '${months} months'`),
+        )
+        .groupByRaw("TO_CHAR(date, 'YYYY-MM')")
+        .orderByRaw("TO_CHAR(date, 'YYYY-MM') ASC");
+
+      return result;
+    },
+  );
+
+  // GET /api/dashboard/category-breakdown — Expenses by category
+  app.get(
+    '/category-breakdown',
+    {
+      schema: {
+        querystring: DashboardQuerySchema,
+      },
+    },
+    async (request) => {
+      const { from, to } = request.query;
+      const knex = fastify.knex;
+
+      let query = knex('transactions')
+        .leftJoin('categories', 'transactions.category_id', 'categories.id')
+        .where('transactions.type', 'expense')
+        .select(
+          knex.raw(
+            "COALESCE(categories.name, 'Uncategorized') as category",
+          ),
+          knex.raw('SUM(transactions.amount) as amount'),
+          knex.raw("COALESCE(categories.color, '#94a3b8') as color"),
+        )
+        .groupByRaw(
+          "COALESCE(categories.name, 'Uncategorized'), COALESCE(categories.color, '#94a3b8')",
+        )
+        .orderBy('amount', 'desc');
+
+      if (from) {
+        query = query.where('transactions.date', '>=', from);
+      }
+      if (to) {
+        query = query.where('transactions.date', '<=', to);
+      }
+
+      // If no date filters, default to current month
+      if (!from && !to) {
+        const now = new Date();
+        const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const firstOfMonthStr = firstOfMonth.toISOString().split('T')[0];
+        query = query.where('transactions.date', '>=', firstOfMonthStr);
+      }
+
+      return query;
+    },
+  );
 }
