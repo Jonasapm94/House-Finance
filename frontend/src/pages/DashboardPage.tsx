@@ -13,10 +13,22 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { dashboardApi } from '../services/api';
-import type { DashboardSummary, MonthlyTrend, CategoryBreakdown } from '../types';
+import type { DashboardSummary } from '../types';
 import './DashboardPage.css';
 
 const MONTHS_OPTIONS = [3, 6, 12, 24];
+
+interface TrendRow {
+  month: string;
+  income: number;
+  expenses: number;
+}
+
+interface BreakdownRow {
+  category: string;
+  amount: number;
+  color: string;
+}
 
 function formatCurrency(v: number) {
   return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -25,8 +37,8 @@ function formatCurrency(v: number) {
 function DashboardPage() {
   const [months, setMonths] = useState(6);
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
-  const [trend, setTrend] = useState<MonthlyTrend[]>([]);
-  const [breakdown, setBreakdown] = useState<CategoryBreakdown[]>([]);
+  const [trend, setTrend] = useState<TrendRow[]>([]);
+  const [breakdown, setBreakdown] = useState<BreakdownRow[]>([]);
 
   const fetchData = useCallback(async () => {
     try {
@@ -42,8 +54,19 @@ function DashboardPage() {
         dashboardApi.categoryBreakdown(dateRange),
       ]);
       setSummary(s);
-      setTrend(t);
-      setBreakdown(b);
+      setTrend(
+        t.map((row) => ({
+          ...row,
+          income: Number(row.income),
+          expenses: Number(row.expenses),
+        })),
+      );
+      setBreakdown(
+        b.map((row) => ({
+          ...row,
+          amount: Number(row.amount),
+        })),
+      );
     } catch (err) {
       console.error('Failed to load dashboard', err);
     }
