@@ -1,0 +1,96 @@
+.rules-page {
+  max-width: 960px;
+}
+
+.rules-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+.rules-header h2 {
+  margin: 0;
+}
+
+.rules-header .btn-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.rules-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.rules-table th,
+.rules-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.rules-table th {
+  background: #f8fafc;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #64748b;
+}
+
+.rules-table tbody tr:hover {
+  background: #f1f5f9;
+}
+
+.match-type-badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.match-type-badge.substring {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.match-type-badge.exact {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.match-type-badge.regex {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.priority-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.rules-table .actions-cell {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.empty-rules {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #94a3b8;
+}

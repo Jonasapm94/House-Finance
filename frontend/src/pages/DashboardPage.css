@@ -1,0 +1,94 @@
+.dashboard-page h2 {
+  margin: 0 0 1.5rem;
+}
+
+.date-range-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.date-range-bar label {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.date-range-bar select {
+  padding: 0.4rem 0.75rem;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.metric-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  text-align: center;
+}
+
+.metric-card .label {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.metric-card .value {
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.metric-card .value.income {
+  color: #16a34a;
+}
+
+.metric-card .value.expenses {
+  color: #dc2626;
+}
+
+.metric-card .value.net.positive {
+  color: #16a34a;
+}
+
+.metric-card .value.net.negative {
+  color: #dc2626;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chart-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.chart-card h3 {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  color: #334155;
+}
+
+.no-data {
+  text-align: center;
+  padding: 2rem;
+  color: #94a3b8;
+}

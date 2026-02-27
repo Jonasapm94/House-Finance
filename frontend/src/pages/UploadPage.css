@@ -1,0 +1,114 @@
+.upload-page h2 {
+  margin-bottom: 1.5rem;
+}
+
+.upload-zone {
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius);
+  padding: 3rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--color-surface);
+}
+
+.upload-zone:hover,
+.upload-zone.dragover {
+  border-color: var(--color-primary);
+  background: rgba(79, 70, 229, 0.04);
+}
+
+.upload-zone p {
+  color: var(--color-text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.upload-zone .file-types {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.upload-zone input[type='file'] {
+  display: none;
+}
+
+.csv-mapping {
+  margin-top: 1.5rem;
+}
+
+.csv-mapping h3 {
+  margin-bottom: 1rem;
+}
+
+.mapping-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.mapping-field label {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+}
+
+.upload-result {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  border-radius: var(--radius);
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+}
+
+.upload-result h3 {
+  color: #166534;
+  margin-bottom: 0.5rem;
+}
+
+.upload-result .stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.75rem;
+}
+
+.upload-result .stat {
+  text-align: center;
+}
+
+.upload-result .stat .value {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.upload-result .stat .label {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.upload-error {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: var(--radius);
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #991b1b;
+}
+
+.selected-file {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.selected-file .filename {
+  font-weight: 500;
+}
+
+.upload-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 0.75rem;
+}
