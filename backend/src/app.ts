@@ -26,7 +26,10 @@ export async function buildApp(
   app.setSerializerCompiler(serializerCompiler);
 
   // Register plugins
-  await app.register(cors, { origin: true });
+  await app.register(cors, {
+    origin: true,
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  });
   await app.register(helmet, { global: true });
   await app.register(multipart, {
     limits: {
