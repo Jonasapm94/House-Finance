@@ -69,7 +69,7 @@ function TransactionsPage() {
   const openEdit = (txn: Transaction) => {
     setEditingTxn(txn);
     setForm({
-      date: txn.date,
+      date: txn.date.slice(0, 10),
       amount: txn.amount,
       description: txn.description,
       type: txn.type,
