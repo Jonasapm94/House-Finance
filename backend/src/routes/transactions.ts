@@ -37,7 +37,11 @@ export async function transactionRoutes(
         query.where('date', '<=', to);
       }
       if (category_id) {
-        query.where('category_id', category_id);
+        if (category_id === 'uncategorized') {
+          query.whereNull('category_id');
+        } else {
+          query.where('category_id', category_id);
+        }
       }
       if (type) {
         query.where('type', type);

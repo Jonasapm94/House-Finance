@@ -68,7 +68,9 @@ export const PaginationSchema = z.object({
 export const TransactionFilterSchema = PaginationSchema.extend({
   from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  category_id: z.coerce.number().int().positive().optional(),
+  category_id: z
+    .union([z.literal('uncategorized'), z.coerce.number().int().positive()])
+    .optional(),
   type: z.enum(['income', 'expense']).optional(),
   search: z.string().optional(),
 });

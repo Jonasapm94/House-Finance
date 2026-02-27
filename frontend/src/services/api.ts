@@ -42,7 +42,7 @@ export interface TransactionFilters {
   limit?: number;
   from?: string;
   to?: string;
-  category_id?: number;
+  category_id?: number | 'uncategorized';
   type?: 'income' | 'expense';
   search?: string;
 }

@@ -194,18 +194,22 @@ function TransactionsPage() {
           <label>Category</label>
           <select
             value={filters.category_id ?? ''}
-            onChange={(e) =>
+            onChange={(e) => {
+              const val = e.target.value;
               setFilters({
                 ...filters,
-                category_id: e.target.value
-                  ? parseInt(e.target.value)
-                  : undefined,
+                category_id: val === 'uncategorized'
+                  ? 'uncategorized'
+                  : val
+                    ? parseInt(val)
+                    : undefined,
                 page: 1,
-              })
-            }
+              });
+            }}
           >
             <option value="">All</option>
-            {categories.map((c) => (
+            <option value="uncategorized">Uncategorized</option>
+            {categories.filter((c) => c.name !== 'Uncategorized').map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
               </option>
