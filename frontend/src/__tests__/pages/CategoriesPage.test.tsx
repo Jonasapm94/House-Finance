@@ -67,7 +67,7 @@ describe('CategoriesPage', () => {
     renderPage();
     await waitFor(() => expect(screen.getByText('Food')).toBeInTheDocument());
     const editButtons = screen.getAllByText('Edit');
-    fireEvent.click(editButtons[0]);
+    fireEvent.click(editButtons[0]!);
     expect(screen.getByText('Edit Category')).toBeInTheDocument();
     expect(screen.getByText('Save')).toBeInTheDocument();
   });
