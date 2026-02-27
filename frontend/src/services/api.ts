@@ -134,6 +134,7 @@ export const uploadApi = {
       amount: string;
       description: string;
       type?: string;
+      external_id?: string;
     },
   ) => {
     const formData = new FormData();

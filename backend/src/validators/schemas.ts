@@ -88,4 +88,5 @@ export const CSVMappingSchema = z.object({
   amount: z.string().min(1),
   description: z.string().min(1),
   type: z.string().optional(),
+  external_id: z.string().optional(),
 });

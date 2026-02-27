@@ -148,4 +148,93 @@ describe('CSV Parser', () => {
       expect(t.external_id).toMatch(/^csv-[a-f0-9]{16}$/);
     });
   });
+
+  // === Nubank-style TSV with UUID identifier ===
+
+  describe('Nubank TSV format', () => {
+    const nubankMapping: CSVColumnMapping = {
+      date: 'Data',
+      amount: 'Valor',
+      description: 'Descrição',
+      external_id: 'Identificador',
+    };
+
+    it('should parse tab-separated files correctly', () => {
+      const content = readFileSync(
+        join(FIXTURES_DIR, 'sample_nubank.csv'),
+        'utf-8',
+      );
+      const transactions = parseCSV(content, nubankMapping);
+
+      expect(transactions).toHaveLength(7);
+    });
+
+    it('should use the Identificador column as external_id', () => {
+      const content = readFileSync(
+        join(FIXTURES_DIR, 'sample_nubank.csv'),
+        'utf-8',
+      );
+      const transactions = parseCSV(content, nubankMapping);
+
+      expect(transactions[0]!.external_id).toBe(
+        '6956a3d9-4e06-4ede-8018-d06ed57205e1',
+      );
+      expect(transactions[1]!.external_id).toBe(
+        '6956eae1-bc3b-4f4b-b886-0d596eed451d',
+      );
+    });
+
+    it('should parse DD/MM/YYYY dates from Nubank', () => {
+      const content = readFileSync(
+        join(FIXTURES_DIR, 'sample_nubank.csv'),
+        'utf-8',
+      );
+      const transactions = parseCSV(content, nubankMapping);
+
+      expect(transactions[0]!.date).toBe('2026-01-01');
+      expect(transactions[6]!.date).toBe('2026-01-03');
+    });
+
+    it('should infer income/expense from amount sign', () => {
+      const content = readFileSync(
+        join(FIXTURES_DIR, 'sample_nubank.csv'),
+        'utf-8',
+      );
+      const transactions = parseCSV(content, nubankMapping);
+
+      // 700 → income
+      const resgate = transactions.find((t) =>
+        t.description.includes('Resgate RDB'),
+      );
+      expect(resgate!.type).toBe('income');
+      expect(resgate!.amount).toBe(700);
+
+      // -850 → expense
+      const pix = transactions.find((t) =>
+        t.description.includes('DANILLO'),
+      );
+      expect(pix!.type).toBe('expense');
+      expect(pix!.amount).toBe(850);
+    });
+
+    it('should handle decimal amounts from Nubank', () => {
+      const content = readFileSync(
+        join(FIXTURES_DIR, 'sample_nubank.csv'),
+        'utf-8',
+      );
+      const transactions = parseCSV(content, nubankMapping);
+
+      const pix = transactions.find((t) =>
+        t.description.includes('ANA RITA'),
+      );
+      expect(pix!.amount).toBe(74.84);
+      expect(pix!.type).toBe('expense');
+
+      const nuinvest = transactions.find((t) =>
+        t.description.includes('NuInvest'),
+      );
+      expect(nuinvest!.amount).toBe(49.78);
+      expect(nuinvest!.type).toBe('income');
+    });
+  });
 });

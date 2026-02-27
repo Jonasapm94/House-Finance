@@ -40,6 +40,18 @@
   margin-bottom: 1rem;
 }
 
+.preset-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.preset-bar label {
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
 .mapping-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

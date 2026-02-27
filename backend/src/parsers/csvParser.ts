@@ -7,6 +7,7 @@ export interface CSVColumnMapping {
   amount: string;
   description: string;
   type?: string; // Optional: column name for income/expense
+  external_id?: string; // Optional: column name for dedup identifier (e.g. UUID)
 }
 
 /**
@@ -83,8 +84,13 @@ function mapCSVRow(
     type = amount > 0 ? 'income' : 'expense';
   }
 
-  // Generate a deterministic external_id from the row content
-  const externalId = generateCSVExternalId(date, amount, description);
+  // Use explicit external_id column if mapped, otherwise generate a hash
+  let externalId: string;
+  if (mapping.external_id && row[mapping.external_id]) {
+    externalId = row[mapping.external_id]!.trim();
+  } else {
+    externalId = generateCSVExternalId(date, amount, description);
+  }
 
   return {
     external_id: externalId,

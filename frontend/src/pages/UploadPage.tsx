@@ -24,9 +24,27 @@ function UploadPage() {
     amount: 'Amount',
     description: 'Description',
     type: '',
+    external_id: '',
   });
 
   const isCSV = file?.name.toLowerCase().endsWith('.csv');
+
+  const CSV_PRESETS = {
+    nubank: {
+      date: 'Data',
+      amount: 'Valor',
+      description: 'Descri\u00e7\u00e3o',
+      type: '',
+      external_id: 'Identificador',
+    },
+    generic: {
+      date: 'Date',
+      amount: 'Amount',
+      description: 'Description',
+      type: 'Type',
+      external_id: '',
+    },
+  } as const satisfies Record<string, typeof csvMapping>;
 
   const handleFile = useCallback((f: File) => {
     const ext = f.name.toLowerCase().split('.').pop();
@@ -62,6 +80,9 @@ function UploadPage() {
             amount: csvMapping.amount,
             description: csvMapping.description,
             ...(csvMapping.type ? { type: csvMapping.type } : {}),
+            ...(csvMapping.external_id
+              ? { external_id: csvMapping.external_id }
+              : {}),
           }
         : undefined;
 
@@ -115,8 +136,23 @@ function UploadPage() {
         <div className="csv-mapping card">
           <h3>CSV Column Mapping</h3>
           <p style={{ color: 'var(--color-text-muted)', marginBottom: '1rem' }}>
-            Enter the column header names from your CSV file
+            Enter the column header names from your CSV file, or pick a preset
           </p>
+          <div className="preset-bar">
+            <label>Preset:</label>
+            <button
+              className="btn-secondary"
+              onClick={() => setCsvMapping({ ...CSV_PRESETS.nubank })}
+            >
+              Nubank
+            </button>
+            <button
+              className="btn-secondary"
+              onClick={() => setCsvMapping({ ...CSV_PRESETS.generic })}
+            >
+              Generic
+            </button>
+          </div>
           <div className="mapping-grid">
             <div className="mapping-field">
               <label>Date Column *</label>
@@ -156,6 +192,16 @@ function UploadPage() {
                   setCsvMapping({ ...csvMapping, type: e.target.value })
                 }
                 placeholder="e.g. Type"
+              />
+            </div>
+            <div className="mapping-field">
+              <label>External ID Column (optional)</label>
+              <input
+                value={csvMapping.external_id}
+                onChange={(e) =>
+                  setCsvMapping({ ...csvMapping, external_id: e.target.value })
+                }
+                placeholder="e.g. Identificador"
               />
             </div>
           </div>
