@@ -10,6 +10,9 @@ function RulesPage() {
   const [editing, setEditing] = useState<CategorizationRule | null>(null);
   const [applying, setApplying] = useState(false);
   const [applyResult, setApplyResult] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
   const [form, setForm] = useState({
     pattern: '',
     match_type: 'substring' as 'substring' | 'exact' | 'regex',
@@ -18,6 +21,8 @@ function RulesPage() {
   });
 
   const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
     try {
       const [r, c] = await Promise.all([
         rulesApi.list(),
@@ -27,6 +32,9 @@ function RulesPage() {
       setCategories(c);
     } catch (err) {
       console.error('Failed to fetch rules', err);
+      setError('Failed to load rules. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -42,6 +50,7 @@ function RulesPage() {
       category_id: categories[0]?.id ?? 0,
       priority: 0,
     });
+    setFormError(null);
     setShowModal(true);
   };
 
@@ -53,10 +62,20 @@ function RulesPage() {
       category_id: rule.category_id,
       priority: rule.priority,
     });
+    setFormError(null);
     setShowModal(true);
   };
 
   const handleSave = async () => {
+    setFormError(null);
+    if (!form.pattern.trim()) {
+      setFormError('Pattern is required.');
+      return;
+    }
+    if (!form.category_id) {
+      setFormError('Category is required.');
+      return;
+    }
     try {
       if (editing) {
         await rulesApi.update(editing.id, form);
@@ -67,6 +86,7 @@ function RulesPage() {
       fetchData();
     } catch (err) {
       console.error('Failed to save rule', err);
+      setFormError('Failed to save rule. Please try again.');
     }
   };
 
@@ -77,6 +97,7 @@ function RulesPage() {
       fetchData();
     } catch (err) {
       console.error('Failed to delete rule', err);
+      setError('Failed to delete rule. Please try again.');
     }
   };
 
@@ -89,6 +110,7 @@ function RulesPage() {
       setTimeout(() => setApplyResult(null), 4000);
     } catch (err) {
       console.error('Failed to apply rules', err);
+      setError('Failed to apply rules. Please try again.');
     } finally {
       setApplying(false);
     }
@@ -116,8 +138,11 @@ function RulesPage() {
       </div>
 
       {applyResult && <div className="info-banner">{applyResult}</div>}
+      {error && <div className="error-banner">{error}</div>}
 
-      {rules.length === 0 ? (
+      {isLoading ? (
+        <div className="loading">Loading...</div>
+      ) : rules.length === 0 ? (
         <div className="empty-rules">
           <p>No categorization rules yet.</p>
           <p>Create rules to automatically categorize imported transactions.</p>
@@ -176,6 +201,7 @@ function RulesPage() {
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>{editing ? 'Edit Rule' : 'New Rule'}</h3>
+            {formError && <div className="form-error">{formError}</div>}
             <div className="form-group">
               <label>Pattern</label>
               <input

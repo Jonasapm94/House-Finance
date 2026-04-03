@@ -8,13 +8,21 @@ function CategoriesPage() {
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
   const [form, setForm] = useState({ name: '', color: '#6366f1' });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const fetchCategories = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
     try {
       const cats = await categoriesApi.list();
       setCategories(cats);
     } catch (err) {
       console.error('Failed to fetch categories', err);
+      setError('Failed to load categories. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -25,16 +33,23 @@ function CategoriesPage() {
   const openAdd = () => {
     setEditing(null);
     setForm({ name: '', color: '#6366f1' });
+    setFormError(null);
     setShowModal(true);
   };
 
   const openEdit = (cat: Category) => {
     setEditing(cat);
     setForm({ name: cat.name, color: cat.color });
+    setFormError(null);
     setShowModal(true);
   };
 
   const handleSave = async () => {
+    setFormError(null);
+    if (!form.name.trim()) {
+      setFormError('Category name is required.');
+      return;
+    }
     try {
       if (editing) {
         await categoriesApi.update(editing.id, form);
@@ -45,6 +60,7 @@ function CategoriesPage() {
       fetchCategories();
     } catch (err) {
       console.error('Failed to save category', err);
+      setFormError('Failed to save category. Please try again.');
     }
   };
 
@@ -60,6 +76,7 @@ function CategoriesPage() {
       fetchCategories();
     } catch (err) {
       console.error('Failed to delete category', err);
+      setError('Failed to delete category. Please try again.');
     }
   };
 
@@ -72,6 +89,11 @@ function CategoriesPage() {
         </button>
       </div>
 
+      {error && <div className="error-banner">{error}</div>}
+
+      {isLoading ? (
+        <div className="loading">Loading...</div>
+      ) : (
       <div className="categories-grid">
         {categories.map((cat) => (
           <div key={cat.id} className="category-card">
@@ -98,11 +120,13 @@ function CategoriesPage() {
           </div>
         ))}
       </div>
+      )}
 
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>{editing ? 'Edit Category' : 'New Category'}</h3>
+            {formError && <div className="form-error">{formError}</div>}
             <div className="form-group">
               <label>Name</label>
               <input

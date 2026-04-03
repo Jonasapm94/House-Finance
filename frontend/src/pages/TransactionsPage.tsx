@@ -17,6 +17,9 @@ function TransactionsPage() {
     page: 1,
     limit: 25,
   });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [editingTxn, setEditingTxn] = useState<Transaction | null>(null);
   const [form, setForm] = useState({
@@ -28,12 +31,17 @@ function TransactionsPage() {
   });
 
   const fetchTransactions = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
     try {
       const res = await transactionsApi.list(filters);
       setTransactions(res.data);
       setPagination(res.pagination);
     } catch (err) {
       console.error('Failed to fetch transactions', err);
+      setError('Failed to load transactions. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   }, [filters]);
 
@@ -63,6 +71,7 @@ function TransactionsPage() {
       type: 'expense',
       category_id: '',
     });
+    setFormError(null);
     setShowModal(true);
   };
 
@@ -75,15 +84,30 @@ function TransactionsPage() {
       type: txn.type,
       category_id: txn.category_id?.toString() ?? '',
     });
+    setFormError(null);
     setShowModal(true);
   };
 
   const handleSave = async () => {
+    setFormError(null);
+    if (!form.date) {
+      setFormError('Date is required.');
+      return;
+    }
+    if (!form.description.trim()) {
+      setFormError('Description is required.');
+      return;
+    }
+    const amount = parseFloat(form.amount);
+    if (!form.amount || isNaN(amount) || amount <= 0) {
+      setFormError('Amount must be a positive number.');
+      return;
+    }
     try {
       if (editingTxn) {
         await transactionsApi.update(editingTxn.id, {
           date: form.date,
-          amount: parseFloat(form.amount),
+          amount,
           description: form.description,
           type: form.type,
           category_id: form.category_id ? parseInt(form.category_id) : null,
@@ -91,7 +115,7 @@ function TransactionsPage() {
       } else {
         await transactionsApi.create({
           date: form.date,
-          amount: parseFloat(form.amount),
+          amount,
           description: form.description,
           type: form.type,
           category_id: form.category_id ? parseInt(form.category_id) : null,
@@ -101,6 +125,7 @@ function TransactionsPage() {
       fetchTransactions();
     } catch (err) {
       console.error('Failed to save transaction', err);
+      setFormError('Failed to save transaction. Please try again.');
     }
   };
 
@@ -111,6 +136,7 @@ function TransactionsPage() {
       fetchTransactions();
     } catch (err) {
       console.error('Failed to delete transaction', err);
+      setError('Failed to delete transaction. Please try again.');
     }
   };
 
@@ -222,6 +248,12 @@ function TransactionsPage() {
         </button>
       </div>
 
+      {error && <div className="error-banner">{error}</div>}
+
+      {isLoading ? (
+        <div className="loading">Loading...</div>
+      ) : (
+      <>
       <div className="transactions-table">
         {transactions.length === 0 ? (
           <div className="no-data">No transactions found</div>
@@ -303,11 +335,14 @@ function TransactionsPage() {
           Next
         </button>
       </div>
+      </>
+      )}
 
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>{editingTxn ? 'Edit Transaction' : 'Add Transaction'}</h3>
+            {formError && <div className="form-error">{formError}</div>}
 
             <div className="form-group">
               <label>Date</label>

@@ -39,8 +39,12 @@ function DashboardPage() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [trend, setTrend] = useState<TrendRow[]>([]);
   const [breakdown, setBreakdown] = useState<BreakdownRow[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
     try {
       const from = new Date();
       from.setMonth(from.getMonth() - months);
@@ -69,6 +73,9 @@ function DashboardPage() {
       );
     } catch (err) {
       console.error('Failed to load dashboard', err);
+      setError('Failed to load dashboard data. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   }, [months]);
 
@@ -91,6 +98,12 @@ function DashboardPage() {
         </select>
       </div>
 
+      {error && <div className="error-banner">{error}</div>}
+
+      {isLoading ? (
+        <div className="loading">Loading...</div>
+      ) : (
+      <>
       {/* Metric cards */}
       {summary && (
         <div className="metrics-grid">
@@ -166,6 +179,8 @@ function DashboardPage() {
           )}
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }
