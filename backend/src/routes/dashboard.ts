@@ -4,6 +4,10 @@ import {
   DashboardQuerySchema,
   MonthlyTrendQuerySchema,
 } from '../validators/schemas';
+import {
+  DEFAULT_CATEGORY_NAME,
+  DEFAULT_CATEGORY_COLOR,
+} from '../constants';
 
 export async function dashboardRoutes(
   fastify: FastifyInstance,
@@ -106,13 +110,15 @@ export async function dashboardRoutes(
         .where('transactions.type', 'expense')
         .select(
           knex.raw(
-            "COALESCE(categories.name, 'Uncategorized') as category",
+            `COALESCE(categories.name, '${DEFAULT_CATEGORY_NAME}') as category`,
           ),
           knex.raw('SUM(transactions.amount) as amount'),
-          knex.raw("COALESCE(categories.color, '#94a3b8') as color"),
+          knex.raw(
+            `COALESCE(categories.color, '${DEFAULT_CATEGORY_COLOR}') as color`,
+          ),
         )
         .groupByRaw(
-          "COALESCE(categories.name, 'Uncategorized'), COALESCE(categories.color, '#94a3b8')",
+          `COALESCE(categories.name, '${DEFAULT_CATEGORY_NAME}'), COALESCE(categories.color, '${DEFAULT_CATEGORY_COLOR}')`,
         )
         .orderBy('amount', 'desc');
 

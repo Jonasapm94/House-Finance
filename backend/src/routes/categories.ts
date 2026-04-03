@@ -7,6 +7,7 @@ import {
   UpdateCategorySchema,
   IdParamSchema,
 } from '../validators/schemas';
+import { DEFAULT_CATEGORY_NAME } from '../constants';
 
 export async function categoryRoutes(fastify: FastifyInstance): Promise<void> {
   const app = fastify.withTypeProvider<ZodTypeProvider>();
@@ -133,10 +134,10 @@ export async function categoryRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       // Prevent deleting "Uncategorized"
-      if (category.name === 'Uncategorized') {
+      if (category.name === DEFAULT_CATEGORY_NAME) {
         return reply.status(400).send({
           error: true,
-          message: 'Cannot delete the Uncategorized category',
+          message: `Cannot delete the ${DEFAULT_CATEGORY_NAME} category`,
           statusCode: 400,
         });
       }
@@ -150,7 +151,7 @@ export async function categoryRoutes(fastify: FastifyInstance): Promise<void> {
 
       return reply.status(200).send({
         message: 'Category deleted',
-        orphanedTransactions: 'reassigned to Uncategorized',
+        orphanedTransactions: `reassigned to ${DEFAULT_CATEGORY_NAME}`,
       });
     },
   );
