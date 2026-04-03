@@ -39,7 +39,7 @@ cp .env.example .env   # defaults work out of the box
 ### 2. Start all services
 
 ```bash
-docker-compose up
+docker compose up
 ```
 
 This starts PostgreSQL, the backend (port 4000), and the frontend (port 3000).
@@ -47,8 +47,8 @@ This starts PostgreSQL, the backend (port 4000), and the frontend (port 3000).
 ### 3. Run migrations and seed
 
 ```bash
-docker-compose exec backend npm run migrate
-docker-compose exec backend npm run seed
+docker compose exec backend npm run migrate
+docker compose exec backend npm run seed
 ```
 
 ### 4. Open the app
