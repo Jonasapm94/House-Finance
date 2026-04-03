@@ -12,9 +12,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "migrate": "knex migrate:latest --knexfile src/knexfile.ts",
-    "migrate:rollback": "knex migrate:rollback --knexfile src/knexfile.ts",
-    "seed": "knex seed:run --knexfile src/knexfile.ts"
+    "migrate": "tsx node_modules/.bin/knex migrate:latest --knexfile src/knexfile.ts",
+    "migrate:rollback": "tsx node_modules/.bin/knex migrate:rollback --knexfile src/knexfile.ts",
+    "seed": "tsx node_modules/.bin/knex seed:run --knexfile src/knexfile.ts"
   },
   "dependencies": {
     "fastify": "^5.2.1",

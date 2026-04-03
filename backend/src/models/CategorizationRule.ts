@@ -29,6 +29,7 @@ export class CategorizationRule extends BaseModel {
   }
 
   static get relationMappings(): RelationMappings {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { Category } = require('./Category');
 
     return {

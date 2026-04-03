@@ -35,7 +35,9 @@ export class Transaction extends BaseModel {
   }
 
   static get relationMappings(): RelationMappings {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { Category } = require('./Category');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { Account } = require('./Account');
 
     return {

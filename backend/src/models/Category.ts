@@ -20,8 +20,10 @@ export class Category extends BaseModel {
   }
 
   static get relationMappings(): RelationMappings {
-    // Lazy require to avoid circular dependencies
+    // Lazy require to avoid circular dependencies (Objection.js pattern)
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { Transaction } = require('./Transaction');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { CategorizationRule } = require('./CategorizationRule');
 
     return {

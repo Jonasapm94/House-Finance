@@ -1,4 +1,4 @@
-import Fastify, { FastifyInstance } from 'fastify';
+import Fastify, { FastifyError, FastifyInstance } from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import multipart from '@fastify/multipart';
@@ -41,7 +41,7 @@ export async function buildApp(
   await app.register(databasePlugin);
 
   // Global error handler
-  app.setErrorHandler((error, _request, reply) => {
+  app.setErrorHandler((error: FastifyError, _request, reply) => {
     const statusCode = error.statusCode ?? 500;
     app.log.error(error);
 
