@@ -22,6 +22,27 @@ const MONTHS_OPTIONS = [
   { value: 6, label: 'Last 6 months' },
   { value: 12, label: 'Last 12 months' },
   { value: 24, label: 'Last 24 months' },
+  { value: -1, label: 'Specific month' },
+];
+
+const currentDate = new Date();
+const currentYear = currentDate.getFullYear();
+const currentMonth = currentDate.getMonth() + 1;
+
+const YEAR_OPTIONS = Array.from({ length: 5 }, (_, i) => currentYear - i);
+const MONTH_OPTIONS = [
+  { value: 1, label: 'January' },
+  { value: 2, label: 'February' },
+  { value: 3, label: 'March' },
+  { value: 4, label: 'April' },
+  { value: 5, label: 'May' },
+  { value: 6, label: 'June' },
+  { value: 7, label: 'July' },
+  { value: 8, label: 'August' },
+  { value: 9, label: 'September' },
+  { value: 10, label: 'October' },
+  { value: 11, label: 'November' },
+  { value: 12, label: 'December' },
 ];
 
 interface TrendRow {
@@ -42,31 +63,44 @@ function formatCurrency(v: number) {
 
 function DashboardPage() {
   const [months, setMonths] = useState(0);
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+  const [selectedYear, setSelectedYear] = useState(currentYear);
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [trend, setTrend] = useState<TrendRow[]>([]);
   const [breakdown, setBreakdown] = useState<BreakdownRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const getDateRange = useCallback(() => {
+    if (months === -1) {
+      const fromDate = new Date(selectedYear, selectedMonth - 1, 1);
+      const toDate = new Date(selectedYear, selectedMonth, 0);
+      return {
+        from: fromDate.toISOString().slice(0, 10),
+        to: toDate.toISOString().slice(0, 10),
+      };
+    }
+    if (months > 0) {
+      const from = new Date();
+      from.setMonth(from.getMonth() - months);
+      return {
+        from: from.toISOString().slice(0, 10),
+        to: new Date().toISOString().slice(0, 10),
+      };
+    }
+    return undefined;
+  }, [months, selectedMonth, selectedYear]);
+
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const dateRange =
-        months > 0
-          ? {
-              from: (() => {
-                const from = new Date();
-                from.setMonth(from.getMonth() - months);
-                return from.toISOString().slice(0, 10);
-              })(),
-              to: new Date().toISOString().slice(0, 10),
-            }
-          : undefined;
+      const dateRange = getDateRange();
+      const trendMonths = months === -1 ? 1 : months > 0 ? months : undefined;
 
       const [s, t, b] = await Promise.all([
         dashboardApi.summary(dateRange),
-        dashboardApi.monthlyTrend(months > 0 ? months : undefined),
+        dashboardApi.monthlyTrend(trendMonths),
         dashboardApi.categoryBreakdown(dateRange),
       ]);
       setSummary(s);
@@ -89,7 +123,7 @@ function DashboardPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [months]);
+  }, [months, getDateRange]);
 
   useEffect(() => {
     fetchData();
@@ -108,6 +142,30 @@ function DashboardPage() {
             </option>
           ))}
         </select>
+        {months === -1 && (
+          <>
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(Number(e.target.value))}
+            >
+              {MONTH_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(Number(e.target.value))}
+            >
+              {YEAR_OPTIONS.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+          </>
+        )}
       </div>
 
       {error && <div className="error-banner">{error}</div>}
