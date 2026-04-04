@@ -108,15 +108,61 @@
   color: #991b1b;
 }
 
-.selected-file {
+.upload-result .file-breakdown {
   margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #86efac;
+}
+
+.upload-result .file-breakdown h4 {
+  font-size: 0.9rem;
+  color: #166534;
+  margin-bottom: 0.5rem;
+}
+
+.upload-result .file-breakdown ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.upload-result .file-breakdown li {
+  font-size: 0.85rem;
+  color: #15803d;
+  padding: 0.25rem 0;
+}
+
+.selected-files {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.selected-file {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  padding: 0.5rem;
+  background: var(--color-surface);
+  border-radius: var(--radius-sm);
 }
 
 .selected-file .filename {
   font-weight: 500;
+}
+
+.btn-remove {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.btn-remove:hover {
+  color: #ef4444;
 }
 
 .upload-actions {

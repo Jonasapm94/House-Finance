@@ -1,24 +1,27 @@
 import { useState, useRef, useCallback } from 'react';
-import { uploadApi } from '../services/api';
+import { uploadApi, UploadResult } from '../services/api';
 import './UploadPage.css';
 
-interface UploadResult {
-  filename: string;
-  totalCount: number;
-  newCount: number;
-  duplicateCount: number;
-  categorizedCount: number;
+interface FileWithSize extends File {
+  size: number;
+}
+
+interface UploadResponse {
+  files: UploadResult[];
+  totalTotalCount: number;
+  totalNewCount: number;
+  totalDuplicateCount: number;
+  totalCategorizedCount: number;
 }
 
 function UploadPage() {
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<FileWithSize[]>([]);
   const [dragover, setDragover] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [result, setResult] = useState<UploadResult | null>(null);
+  const [result, setResult] = useState<UploadResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // CSV mapping state
   const [csvMapping, setCsvMapping] = useState({
     date: 'Date',
     amount: 'Amount',
@@ -27,7 +30,7 @@ function UploadPage() {
     external_id: '',
   });
 
-  const isCSV = file?.name.toLowerCase().endsWith('.csv');
+  const hasCSV = files.some((f) => f.name.toLowerCase().endsWith('.csv'));
 
   const CSV_PRESETS = {
     nubank: {
@@ -46,35 +49,51 @@ function UploadPage() {
     },
   } as const satisfies Record<string, typeof csvMapping>;
 
-  const handleFile = useCallback((f: File) => {
-    const ext = f.name.toLowerCase().split('.').pop();
-    if (ext !== 'ofx' && ext !== 'csv') {
+  const handleFiles = useCallback((newFiles: FileList | null) => {
+    if (!newFiles || newFiles.length === 0) return;
+
+    const validFiles: FileWithSize[] = [];
+    for (let i = 0; i < newFiles.length; i++) {
+      const f = newFiles[i];
+      if (!f) continue;
+      const ext = f.name.toLowerCase().split('.').pop();
+      if (ext === 'ofx' || ext === 'csv') {
+        validFiles.push(f as FileWithSize);
+      }
+    }
+
+    if (validFiles.length === 0) {
       setError('Unsupported file type. Please upload .ofx or .csv files.');
       return;
     }
-    setFile(f);
+
+    setFiles((prev) => [...prev, ...validFiles]);
     setResult(null);
     setError(null);
+  }, []);
+
+  const removeFile = useCallback((index: number) => {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
+    setResult(null);
   }, []);
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
       setDragover(false);
-      const f = e.dataTransfer.files[0];
-      if (f) handleFile(f);
+      handleFiles(e.dataTransfer.files);
     },
-    [handleFile],
+    [handleFiles],
   );
 
   const handleUpload = async () => {
-    if (!file) return;
+    if (files.length === 0) return;
     setUploading(true);
     setError(null);
     setResult(null);
 
     try {
-      const mapping = isCSV
+      const mapping = hasCSV
         ? {
             date: csvMapping.date,
             amount: csvMapping.amount,
@@ -86,9 +105,9 @@ function UploadPage() {
           }
         : undefined;
 
-      const res = await uploadApi.uploadFile(file, mapping);
-      setResult(res as unknown as UploadResult);
-      setFile(null);
+      const res = await uploadApi.uploadFiles(files, mapping);
+      setResult(res);
+      setFiles([]);
     } catch (err) {
       const msg =
         err instanceof Error ? err.message : 'Upload failed';
@@ -112,31 +131,40 @@ function UploadPage() {
         onDrop={handleDrop}
         onClick={() => inputRef.current?.click()}
       >
-        <p>Drag & drop your bank file here, or click to browse</p>
+        <p>Drag & drop your bank files here, or click to browse</p>
         <span className="file-types">Supports .ofx and .csv files</span>
         <input
           ref={inputRef}
           type="file"
           accept=".ofx,.csv"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) handleFile(f);
-          }}
+          multiple
+          onChange={(e) => handleFiles(e.target.files)}
         />
       </div>
 
-      {file && (
-        <div className="selected-file">
-          <span className="filename">{file.name}</span>
-          <span>({(file.size / 1024).toFixed(1)} KB)</span>
+      {files.length > 0 && (
+        <div className="selected-files">
+          {files.map((f, i) => (
+            <div key={i} className="selected-file">
+              <span className="filename">{f.name}</span>
+              <span>({(f.size / 1024).toFixed(1)} KB)</span>
+              <button
+                className="btn-remove"
+                onClick={() => removeFile(i)}
+                type="button"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
         </div>
       )}
 
-      {isCSV && (
+      {hasCSV && (
         <div className="csv-mapping card">
           <h3>CSV Column Mapping</h3>
           <p style={{ color: 'var(--color-text-muted)', marginBottom: '1rem' }}>
-            Enter the column header names from your CSV file, or pick a preset
+            Enter the column header names from your CSV files, or pick a preset
           </p>
           <div className="preset-bar">
             <label>Preset:</label>
@@ -211,21 +239,21 @@ function UploadPage() {
       <div className="upload-actions">
         <button
           className="btn-primary"
-          disabled={!file || uploading}
+          disabled={files.length === 0 || uploading}
           onClick={handleUpload}
         >
-          {uploading ? 'Uploading...' : 'Upload'}
+          {uploading ? 'Uploading...' : `Upload ${files.length} file${files.length !== 1 ? 's' : ''}`}
         </button>
-        {file && (
+        {files.length > 0 && (
           <button
             className="btn-secondary"
             onClick={() => {
-              setFile(null);
+              setFiles([]);
               setResult(null);
               setError(null);
             }}
           >
-            Clear
+            Clear All
           </button>
         )}
       </div>
@@ -237,22 +265,35 @@ function UploadPage() {
           <h3>Import Successful!</h3>
           <div className="stats">
             <div className="stat">
-              <div className="value">{result.totalCount}</div>
+              <div className="value">{result.totalTotalCount}</div>
               <div className="label">Total Parsed</div>
             </div>
             <div className="stat">
-              <div className="value">{result.newCount}</div>
+              <div className="value">{result.totalNewCount}</div>
               <div className="label">New Imported</div>
             </div>
             <div className="stat">
-              <div className="value">{result.duplicateCount}</div>
+              <div className="value">{result.totalDuplicateCount}</div>
               <div className="label">Duplicates Skipped</div>
             </div>
             <div className="stat">
-              <div className="value">{result.categorizedCount}</div>
+              <div className="value">{result.totalCategorizedCount}</div>
               <div className="label">Auto-Categorized</div>
             </div>
           </div>
+          {result.files.length > 1 && (
+            <div className="file-breakdown">
+              <h4>Per-file breakdown:</h4>
+              <ul>
+                {result.files.map((f, i) => (
+                  <li key={i}>
+                    <strong>{f.filename}</strong>: {f.newCount} new,{' '}
+                    {f.duplicateCount} duplicate
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
     </div>

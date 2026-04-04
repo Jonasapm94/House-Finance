@@ -6,7 +6,6 @@ import type {
   DashboardSummary,
   MonthlyTrend,
   CategoryBreakdown,
-  ImportLog,
 } from '../types';
 
 // === Categories ===
@@ -126,9 +125,25 @@ export const rulesApi = {
 };
 
 // === Upload ===
+export interface UploadResult {
+  filename: string;
+  totalCount: number;
+  newCount: number;
+  duplicateCount: number;
+  categorizedCount: number;
+}
+
+export interface MultiUploadResponse {
+  files: UploadResult[];
+  totalTotalCount: number;
+  totalNewCount: number;
+  totalDuplicateCount: number;
+  totalCategorizedCount: number;
+}
+
 export const uploadApi = {
-  uploadFile: (
-    file: File,
+  uploadFiles: (
+    files: File[],
     csvMapping?: {
       date: string;
       amount: string;
@@ -138,14 +153,17 @@ export const uploadApi = {
     },
   ) => {
     const formData = new FormData();
-    formData.append('file', file);
+
+    for (const file of files) {
+      formData.append('file', file);
+    }
 
     if (csvMapping) {
       formData.append('mapping', JSON.stringify(csvMapping));
     }
 
     return apiClient
-      .post<ImportLog>('/upload', formData, {
+      .post<MultiUploadResponse>('/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
