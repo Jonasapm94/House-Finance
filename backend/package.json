@@ -14,7 +14,11 @@
     "test:coverage": "vitest run --coverage",
     "migrate": "tsx node_modules/.bin/knex migrate:latest --knexfile src/knexfile.ts",
     "migrate:rollback": "tsx node_modules/.bin/knex migrate:rollback --knexfile src/knexfile.ts",
-    "seed": "tsx node_modules/.bin/knex seed:run --knexfile src/knexfile.ts"
+    "seed": "tsx node_modules/.bin/knex seed:run --knexfile src/knexfile.ts",
+    "test:migrate": "tsx node_modules/.bin/knex migrate:latest --knexfile src/knexfile.ts --env test",
+    "test:migrate:rollback": "tsx node_modules/.bin/knex migrate:rollback --knexfile src/knexfile.ts --env test",
+    "test:create-db": "tsx -e \"import { Pool } from 'pg'; const pool = new Pool({ host: 'localhost', port: 5432, user: 'finance_user', password: 'finance_pass', database: 'postgres' }); pool.query('CREATE DATABASE house_finance_test').then(() => pool.end()).catch(e => { if (e.code !== '42P04') throw e; pool.end(); })\"",
+    "test:reset": "npm run test:migrate:rollback && npm run test:migrate"
   },
   "dependencies": {
     "fastify": "^5.2.1",

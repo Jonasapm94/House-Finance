@@ -16,7 +16,13 @@ import { dashboardApi } from '../services/api';
 import type { DashboardSummary } from '../types';
 import './DashboardPage.css';
 
-const MONTHS_OPTIONS = [3, 6, 12, 24];
+const MONTHS_OPTIONS = [
+  { value: 0, label: 'All time' },
+  { value: 3, label: 'Last 3 months' },
+  { value: 6, label: 'Last 6 months' },
+  { value: 12, label: 'Last 12 months' },
+  { value: 24, label: 'Last 24 months' },
+];
 
 interface TrendRow {
   month: string;
@@ -35,7 +41,7 @@ function formatCurrency(v: number) {
 }
 
 function DashboardPage() {
-  const [months, setMonths] = useState(6);
+  const [months, setMonths] = useState(0);
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [trend, setTrend] = useState<TrendRow[]>([]);
   const [breakdown, setBreakdown] = useState<BreakdownRow[]>([]);
@@ -46,15 +52,18 @@ function DashboardPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const from = new Date();
-      from.setMonth(from.getMonth() - months);
-      const fromStr = from.toISOString().slice(0, 10);
-      const toStr = new Date().toISOString().slice(0, 10);
-      const dateRange = { from: fromStr, to: toStr };
+      const dateRange = months > 0 ? {
+        from: (() => {
+          const from = new Date();
+          from.setMonth(from.getMonth() - months);
+          return from.toISOString().slice(0, 10);
+        })(),
+        to: new Date().toISOString().slice(0, 10)
+      } : undefined;
 
       const [s, t, b] = await Promise.all([
         dashboardApi.summary(dateRange),
-        dashboardApi.monthlyTrend(months),
+        dashboardApi.monthlyTrend(months > 0 ? months : undefined),
         dashboardApi.categoryBreakdown(dateRange),
       ]);
       setSummary(s);
@@ -90,9 +99,9 @@ function DashboardPage() {
       <div className="date-range-bar">
         <label>Period:</label>
         <select value={months} onChange={(e) => setMonths(Number(e.target.value))}>
-          {MONTHS_OPTIONS.map((m) => (
-            <option key={m} value={m}>
-              Last {m} months
+          {MONTHS_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
             </option>
           ))}
         </select>

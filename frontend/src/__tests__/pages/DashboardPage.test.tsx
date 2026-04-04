@@ -68,9 +68,9 @@ describe('DashboardPage', () => {
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
   });
 
-  it('renders period selector with default 6 months', () => {
+  it('renders period selector with default All time', () => {
     renderPage();
-    const select = screen.getByDisplayValue('Last 6 months');
+    const select = screen.getByDisplayValue('All time');
     expect(select).toBeInTheDocument();
   });
 
@@ -95,8 +95,23 @@ describe('DashboardPage', () => {
     });
   });
 
-  it('calls API with date range params', async () => {
+  it('calls API with date range params when months > 0', async () => {
+    (dashboardApi.summary as ReturnType<typeof vi.fn>).mockResolvedValue(mockSummary);
+    (dashboardApi.monthlyTrend as ReturnType<typeof vi.fn>).mockResolvedValue(mockTrend);
+    (dashboardApi.categoryBreakdown as ReturnType<typeof vi.fn>).mockResolvedValue(mockBreakdown);
+
     renderPage();
+
+    // Wait for initial render with default (months=0, no date range)
+    await waitFor(() => {
+      expect(dashboardApi.summary).toHaveBeenCalledWith(undefined);
+    });
+
+    // Now change to 6 months
+    const select = screen.getByDisplayValue('All time') as HTMLSelectElement;
+    select.value = '6';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+
     await waitFor(() => {
       expect(dashboardApi.summary).toHaveBeenCalledWith(
         expect.objectContaining({ from: expect.any(String), to: expect.any(String) }),

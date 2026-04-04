@@ -91,15 +91,25 @@ npm run dev          # starts on port 3000, proxies /api to backend
 ### Running tests
 
 ```bash
-cd backend && npm test     # 39 tests (parsers, categorization)
-cd frontend && npm test    # 20 tests (Dashboard, Categories, Rules pages)
+# Backend tests (unit tests - no DB required)
+cd backend && npm test
+
+# Backend integration tests (requires test database)
+cd backend
+npm run test:create-db   # Create test DB (one-time)
+npm run test:migrate    # Run migrations on test DB
+npm test                # Run all tests
+
+# Run a single test file
+npx vitest run src/__tests__/parsers/ofxParser.test.ts
+
+# Reset test database
+npm run test:reset
 ```
 
-Run a single test file:
-
 ```bash
-cd backend && npx vitest run src/__tests__/parsers/ofxParser.test.ts
-cd frontend && npx vitest run src/__tests__/pages/DashboardPage.test.tsx
+# Frontend tests
+cd frontend && npm test
 ```
 
 ## Architecture
@@ -171,31 +181,17 @@ Enums: `transaction_type` (income/expense), `transaction_source` (ofx/csv/manual
 
 ## Known Issues
 
-### Build / CI Failures
-
-1. **TypeScript compilation error in `backend/src/app.ts`** — The error handler types `error` as `unknown` but accesses `.statusCode`, `.message`, and `.validation` without narrowing. `npm run build` fails.
-
-2. **ESLint errors: `require()` imports in models** — `Category.ts`, `Transaction.ts`, and `CategorizationRule.ts` use `require()` in `relationMappings` to avoid circular dependencies. This violates `@typescript-eslint/no-require-imports`. `npm run lint` fails with 5 errors.
-
 ### Missing Functionality
 
-3. **No Accounts API** — The `Account` model and `accounts` table exist but there are no CRUD endpoints. Accounts can't be created or managed through the UI. Transactions reference `account_id` but it's always NULL for imported data.
-
-4. **No loading states in frontend** — Pages show empty content while fetching data. No spinners or skeleton screens.
-
-5. **No user-facing error messages** — All API errors are logged to `console.error()` only. Users see no feedback when operations fail.
-
-6. **No form validation in frontend** — Forms submit without checking required fields or validating inputs client-side (server-side Zod validation still catches most issues).
+1. **No Accounts API** — The `Account` model and `accounts` table exist but there are no CRUD endpoints. Accounts can't be created or managed through the UI. Transactions reference `account_id` but it's always NULL for imported data.
 
 ### Code Quality
 
-7. **No integration tests** — Test coverage is limited to parsers and categorization logic (backend) and component rendering (frontend). No tests for API routes or database interactions.
+2. **No integration tests** — Test coverage is limited to parsers and categorization logic (backend) and component rendering (frontend). No tests for API routes or database interactions.
 
-8. **Hardcoded "Uncategorized" string** — Category name is hardcoded in multiple places (`categories.ts`, `dashboard.ts`) instead of using a constant.
+3. **Docker runs dev mode only** — Both Dockerfiles use `npm run dev`. No production build or serve configuration.
 
-9. **Docker runs dev mode only** — Both Dockerfiles use `npm run dev`. No production build or serve configuration.
-
-10. **No authentication** — The app has no auth layer. Designed for local use only — should not be exposed to the internet without adding authentication.
+4. **No authentication** — The app has no auth layer. Designed for local use only — should not be exposed to the internet without adding authentication.
 
 ## Environment Variables
 

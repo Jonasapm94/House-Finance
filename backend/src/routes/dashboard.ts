@@ -35,14 +35,6 @@ export async function dashboardRoutes(
         query = query.where('date', '<=', to);
       }
 
-      // If no date filters, default to current month
-      if (!from && !to) {
-        const now = new Date();
-        const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const firstOfMonthStr = firstOfMonth.toISOString().split('T')[0];
-        query = query.where('date', '>=', firstOfMonthStr);
-      }
-
       const result = await query.select(
         knex.raw(
           "COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) as \"totalIncome\"",
@@ -127,14 +119,6 @@ export async function dashboardRoutes(
       }
       if (to) {
         query = query.where('transactions.date', '<=', to);
-      }
-
-      // If no date filters, default to current month
-      if (!from && !to) {
-        const now = new Date();
-        const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const firstOfMonthStr = firstOfMonth.toISOString().split('T')[0];
-        query = query.where('transactions.date', '>=', firstOfMonthStr);
       }
 
       return query;
