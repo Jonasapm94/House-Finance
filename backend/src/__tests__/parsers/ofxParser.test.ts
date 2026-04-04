@@ -68,18 +68,11 @@ describe('OFX Parser', () => {
     const transactions = parseOFX(content);
 
     const dates = transactions.map((t) => t.date);
-    expect(dates).toEqual([
-      '2024-01-05',
-      '2024-01-10',
-      '2024-01-15',
-      '2024-01-20',
-    ]);
+    expect(dates).toEqual(['2024-01-05', '2024-01-10', '2024-01-15', '2024-01-20']);
   });
 
   it('should return empty array for content without OFX root', () => {
-    expect(() => parseOFX('just some random text')).toThrow(
-      'Invalid OFX file',
-    );
+    expect(() => parseOFX('just some random text')).toThrow('Invalid OFX file');
   });
 
   it('should return empty array for OFX without transactions', () => {

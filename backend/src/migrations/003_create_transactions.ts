@@ -39,10 +39,7 @@ export async function up(knex: Knex): Promise<void> {
     table.decimal('amount', 12, 2).notNullable();
     table.text('description').notNullable();
     table.specificType('type', 'transaction_type').notNullable();
-    table
-      .specificType('source', 'transaction_source')
-      .notNullable()
-      .defaultTo('manual');
+    table.specificType('source', 'transaction_source').notNullable().defaultTo('manual');
     table.timestamps(true, true);
 
     // Indexes for common queries

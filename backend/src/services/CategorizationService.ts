@@ -29,10 +29,7 @@ export class CategorizationService {
     let uncategorizedCount = 0;
 
     for (const txn of transactions) {
-      const matchedRule = CategorizationService.findMatchingRule(
-        txn.description,
-        rules,
-      );
+      const matchedRule = CategorizationService.findMatchingRule(txn.description, rules);
 
       if (matchedRule) {
         txn.category_id = matchedRule.category_id;
@@ -58,10 +55,7 @@ export class CategorizationService {
     let categorizedCount = 0;
 
     for (const txn of uncategorized) {
-      const matchedRule = CategorizationService.findMatchingRule(
-        txn.description,
-        rules,
-      );
+      const matchedRule = CategorizationService.findMatchingRule(txn.description, rules);
 
       if (matchedRule) {
         await Transaction.query()

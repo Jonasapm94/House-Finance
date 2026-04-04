@@ -25,13 +25,9 @@ export function parseCSV(
   });
 
   if (result.errors.length > 0) {
-    const criticalErrors = result.errors.filter(
-      (e) => e.type !== 'FieldMismatch',
-    );
+    const criticalErrors = result.errors.filter((e) => e.type !== 'FieldMismatch');
     if (criticalErrors.length > 0) {
-      throw new Error(
-        `CSV parsing error: ${criticalErrors[0]!.message}`,
-      );
+      throw new Error(`CSV parsing error: ${criticalErrors[0]!.message}`);
     }
   }
 

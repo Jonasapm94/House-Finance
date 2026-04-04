@@ -3,9 +3,7 @@ import { CategorizationService } from '../../services/CategorizationService';
 import { CategorizationRule } from '../../models/CategorizationRule';
 
 // Create mock rules without DB dependency
-function createMockRule(
-  overrides: Partial<CategorizationRule>,
-): CategorizationRule {
+function createMockRule(overrides: Partial<CategorizationRule>): CategorizationRule {
   return {
     id: 1,
     category_id: 1,
@@ -80,10 +78,7 @@ describe('CategorizationService.findMatchingRule', () => {
         }),
       ];
 
-      const result = CategorizationService.findMatchingRule(
-        'Salary Deposit',
-        rules,
-      );
+      const result = CategorizationService.findMatchingRule('Salary Deposit', rules);
       expect(result!.category_id).toBe(20);
     });
 
@@ -95,10 +90,7 @@ describe('CategorizationService.findMatchingRule', () => {
         }),
       ];
 
-      const result = CategorizationService.findMatchingRule(
-        'Salary Deposit',
-        rules,
-      );
+      const result = CategorizationService.findMatchingRule('Salary Deposit', rules);
       expect(result).toBeNull();
     });
   });
@@ -151,10 +143,7 @@ describe('CategorizationService.findMatchingRule', () => {
         }),
       ];
 
-      const result = CategorizationService.findMatchingRule(
-        'fallback text',
-        rules,
-      );
+      const result = CategorizationService.findMatchingRule('fallback text', rules);
       expect(result!.category_id).toBe(60);
     });
   });
@@ -178,10 +167,7 @@ describe('CategorizationService.findMatchingRule', () => {
         }),
       ];
 
-      const result = CategorizationService.findMatchingRule(
-        'UBER EATS delivery',
-        rules,
-      );
+      const result = CategorizationService.findMatchingRule('UBER EATS delivery', rules);
       // First rule in array wins
       expect(result!.category_id).toBe(10);
     });
@@ -204,10 +190,7 @@ describe('CategorizationService.findMatchingRule', () => {
         }),
       ];
 
-      const result = CategorizationService.findMatchingRule(
-        'UBER EATS delivery',
-        rules,
-      );
+      const result = CategorizationService.findMatchingRule('UBER EATS delivery', rules);
       expect(result!.category_id).toBe(20);
     });
 
@@ -224,20 +207,14 @@ describe('CategorizationService.findMatchingRule', () => {
         }),
       ];
 
-      const result = CategorizationService.findMatchingRule(
-        'UBER EATS delivery',
-        rules,
-      );
+      const result = CategorizationService.findMatchingRule('UBER EATS delivery', rules);
       expect(result).toBeNull();
     });
   });
 
   describe('edge cases', () => {
     it('should handle empty rules array', () => {
-      const result = CategorizationService.findMatchingRule(
-        'anything',
-        [],
-      );
+      const result = CategorizationService.findMatchingRule('anything', []);
       expect(result).toBeNull();
     });
 

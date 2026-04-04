@@ -52,14 +52,17 @@ function DashboardPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const dateRange = months > 0 ? {
-        from: (() => {
-          const from = new Date();
-          from.setMonth(from.getMonth() - months);
-          return from.toISOString().slice(0, 10);
-        })(),
-        to: new Date().toISOString().slice(0, 10)
-      } : undefined;
+      const dateRange =
+        months > 0
+          ? {
+              from: (() => {
+                const from = new Date();
+                from.setMonth(from.getMonth() - months);
+                return from.toISOString().slice(0, 10);
+              })(),
+              to: new Date().toISOString().slice(0, 10),
+            }
+          : undefined;
 
       const [s, t, b] = await Promise.all([
         dashboardApi.summary(dateRange),
@@ -112,83 +115,87 @@ function DashboardPage() {
       {isLoading ? (
         <div className="loading">Loading...</div>
       ) : (
-      <>
-      {/* Metric cards */}
-      {summary && (
-        <div className="metrics-grid">
-          <div className="metric-card">
-            <div className="label">Income</div>
-            <div className="value income">
-              {formatCurrency(Number(summary.totalIncome))}
-            </div>
-          </div>
-          <div className="metric-card">
-            <div className="label">Expenses</div>
-            <div className="value expenses">
-              {formatCurrency(Number(summary.totalExpenses))}
-            </div>
-          </div>
-          <div className="metric-card">
-            <div className="label">Net Balance</div>
-            <div
-              className={`value net ${Number(summary.netBalance) >= 0 ? 'positive' : 'negative'}`}
-            >
-              {formatCurrency(Number(summary.netBalance))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Charts */}
-      <div className="charts-grid">
-        <div className="chart-card">
-          <h3>Monthly Trend</h3>
-          {trend.length === 0 ? (
-            <div className="no-data">No data for selected period</div>
-          ) : (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={trend}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip formatter={(v: number) => formatCurrency(v)} />
-                <Legend />
-                <Bar dataKey="income" fill="#16a34a" name="Income" />
-                <Bar dataKey="expenses" fill="#dc2626" name="Expenses" />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </div>
-
-        <div className="chart-card">
-          <h3>Expenses by Category</h3>
-          {breakdown.length === 0 ? (
-            <div className="no-data">No data for selected period</div>
-          ) : (
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={breakdown}
-                  dataKey="amount"
-                  nameKey="category"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={100}
-                  label={({ category, percent }: { category: string; percent: number }) =>
-                    `${category} ${(percent * 100).toFixed(0)}%`
-                  }
+        <>
+          {/* Metric cards */}
+          {summary && (
+            <div className="metrics-grid">
+              <div className="metric-card">
+                <div className="label">Income</div>
+                <div className="value income">
+                  {formatCurrency(Number(summary.totalIncome))}
+                </div>
+              </div>
+              <div className="metric-card">
+                <div className="label">Expenses</div>
+                <div className="value expenses">
+                  {formatCurrency(Number(summary.totalExpenses))}
+                </div>
+              </div>
+              <div className="metric-card">
+                <div className="label">Net Balance</div>
+                <div
+                  className={`value net ${Number(summary.netBalance) >= 0 ? 'positive' : 'negative'}`}
                 >
-                  {breakdown.map((entry, idx) => (
-                    <Cell key={idx} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(v: number) => formatCurrency(v)} />
-              </PieChart>
-            </ResponsiveContainer>
+                  {formatCurrency(Number(summary.netBalance))}
+                </div>
+              </div>
+            </div>
           )}
-        </div>
-      </div>
-      </>
+
+          {/* Charts */}
+          <div className="charts-grid">
+            <div className="chart-card">
+              <h3>Monthly Trend</h3>
+              {trend.length === 0 ? (
+                <div className="no-data">No data for selected period</div>
+              ) : (
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={trend}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip formatter={(v: number) => formatCurrency(v)} />
+                    <Legend />
+                    <Bar dataKey="income" fill="#16a34a" name="Income" />
+                    <Bar dataKey="expenses" fill="#dc2626" name="Expenses" />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+
+            <div className="chart-card">
+              <h3>Expenses by Category</h3>
+              {breakdown.length === 0 ? (
+                <div className="no-data">No data for selected period</div>
+              ) : (
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={breakdown}
+                      dataKey="amount"
+                      nameKey="category"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={100}
+                      label={({
+                        category,
+                        percent,
+                      }: {
+                        category: string;
+                        percent: number;
+                      }) => `${category} ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {breakdown.map((entry, idx) => (
+                        <Cell key={idx} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(v: number) => formatCurrency(v)} />
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

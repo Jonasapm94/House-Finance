@@ -25,9 +25,7 @@ describe('CSV Parser', () => {
     const content = readFileSync(join(FIXTURES_DIR, 'sample.csv'), 'utf-8');
     const transactions = parseCSV(content, defaultMapping);
 
-    const salary = transactions.find((t) =>
-      t.description.includes('Salary'),
-    );
+    const salary = transactions.find((t) => t.description.includes('Salary'));
     expect(salary).toBeDefined();
     expect(salary!.amount).toBe(5000.0);
     expect(salary!.type).toBe('income');
@@ -38,9 +36,7 @@ describe('CSV Parser', () => {
     const content = readFileSync(join(FIXTURES_DIR, 'sample.csv'), 'utf-8');
     const transactions = parseCSV(content, defaultMapping);
 
-    const grocery = transactions.find((t) =>
-      t.description.includes('Supermarket'),
-    );
+    const grocery = transactions.find((t) => t.description.includes('Supermarket'));
     expect(grocery).toBeDefined();
     expect(grocery!.amount).toBe(150.75);
     expect(grocery!.type).toBe('expense');
@@ -51,9 +47,7 @@ describe('CSV Parser', () => {
     const first = parseCSV(content, defaultMapping);
     const second = parseCSV(content, defaultMapping);
 
-    expect(first.map((t) => t.external_id)).toEqual(
-      second.map((t) => t.external_id),
-    );
+    expect(first.map((t) => t.external_id)).toEqual(second.map((t) => t.external_id));
   });
 
   it('should generate unique external_ids for different transactions', () => {
@@ -65,10 +59,7 @@ describe('CSV Parser', () => {
   });
 
   it('should handle Brazilian date format (DD/MM/YYYY)', () => {
-    const content = readFileSync(
-      join(FIXTURES_DIR, 'sample_br.csv'),
-      'utf-8',
-    );
+    const content = readFileSync(join(FIXTURES_DIR, 'sample_br.csv'), 'utf-8');
     const brMapping: CSVColumnMapping = {
       date: 'Data',
       amount: 'Valor',
@@ -81,10 +72,7 @@ describe('CSV Parser', () => {
   });
 
   it('should handle Brazilian amount format (1.000,00)', () => {
-    const content = readFileSync(
-      join(FIXTURES_DIR, 'sample_br.csv'),
-      'utf-8',
-    );
+    const content = readFileSync(join(FIXTURES_DIR, 'sample_br.csv'), 'utf-8');
     const brMapping: CSVColumnMapping = {
       date: 'Data',
       amount: 'Valor',
@@ -92,19 +80,14 @@ describe('CSV Parser', () => {
     };
     const transactions = parseCSV(content, brMapping);
 
-    const salary = transactions.find((t) =>
-      t.description.includes('Salario'),
-    );
+    const salary = transactions.find((t) => t.description.includes('Salario'));
     expect(salary).toBeDefined();
     expect(salary!.amount).toBe(5000.0);
     expect(salary!.type).toBe('income');
   });
 
   it('should determine type from amount sign when type column is absent', () => {
-    const content = readFileSync(
-      join(FIXTURES_DIR, 'sample_br.csv'),
-      'utf-8',
-    );
+    const content = readFileSync(join(FIXTURES_DIR, 'sample_br.csv'), 'utf-8');
     const brMapping: CSVColumnMapping = {
       date: 'Data',
       amount: 'Valor',
@@ -112,14 +95,10 @@ describe('CSV Parser', () => {
     };
     const transactions = parseCSV(content, brMapping);
 
-    const expense = transactions.find((t) =>
-      t.description.includes('Supermercado'),
-    );
+    const expense = transactions.find((t) => t.description.includes('Supermercado'));
     expect(expense!.type).toBe('expense');
 
-    const income = transactions.find((t) =>
-      t.description.includes('Salario'),
-    );
+    const income = transactions.find((t) => t.description.includes('Salario'));
     expect(income!.type).toBe('income');
   });
 
@@ -160,35 +139,22 @@ describe('CSV Parser', () => {
     };
 
     it('should parse tab-separated files correctly', () => {
-      const content = readFileSync(
-        join(FIXTURES_DIR, 'sample_nubank.csv'),
-        'utf-8',
-      );
+      const content = readFileSync(join(FIXTURES_DIR, 'sample_nubank.csv'), 'utf-8');
       const transactions = parseCSV(content, nubankMapping);
 
       expect(transactions).toHaveLength(7);
     });
 
     it('should use the Identificador column as external_id', () => {
-      const content = readFileSync(
-        join(FIXTURES_DIR, 'sample_nubank.csv'),
-        'utf-8',
-      );
+      const content = readFileSync(join(FIXTURES_DIR, 'sample_nubank.csv'), 'utf-8');
       const transactions = parseCSV(content, nubankMapping);
 
-      expect(transactions[0]!.external_id).toBe(
-        '6956a3d9-4e06-4ede-8018-d06ed57205e1',
-      );
-      expect(transactions[1]!.external_id).toBe(
-        '6956eae1-bc3b-4f4b-b886-0d596eed451d',
-      );
+      expect(transactions[0]!.external_id).toBe('6956a3d9-4e06-4ede-8018-d06ed57205e1');
+      expect(transactions[1]!.external_id).toBe('6956eae1-bc3b-4f4b-b886-0d596eed451d');
     });
 
     it('should parse DD/MM/YYYY dates from Nubank', () => {
-      const content = readFileSync(
-        join(FIXTURES_DIR, 'sample_nubank.csv'),
-        'utf-8',
-      );
+      const content = readFileSync(join(FIXTURES_DIR, 'sample_nubank.csv'), 'utf-8');
       const transactions = parseCSV(content, nubankMapping);
 
       expect(transactions[0]!.date).toBe('2026-01-01');
@@ -196,43 +162,29 @@ describe('CSV Parser', () => {
     });
 
     it('should infer income/expense from amount sign', () => {
-      const content = readFileSync(
-        join(FIXTURES_DIR, 'sample_nubank.csv'),
-        'utf-8',
-      );
+      const content = readFileSync(join(FIXTURES_DIR, 'sample_nubank.csv'), 'utf-8');
       const transactions = parseCSV(content, nubankMapping);
 
       // 700 → income
-      const resgate = transactions.find((t) =>
-        t.description.includes('Resgate RDB'),
-      );
+      const resgate = transactions.find((t) => t.description.includes('Resgate RDB'));
       expect(resgate!.type).toBe('income');
       expect(resgate!.amount).toBe(700);
 
       // -850 → expense
-      const pix = transactions.find((t) =>
-        t.description.includes('DANILLO'),
-      );
+      const pix = transactions.find((t) => t.description.includes('DANILLO'));
       expect(pix!.type).toBe('expense');
       expect(pix!.amount).toBe(850);
     });
 
     it('should handle decimal amounts from Nubank', () => {
-      const content = readFileSync(
-        join(FIXTURES_DIR, 'sample_nubank.csv'),
-        'utf-8',
-      );
+      const content = readFileSync(join(FIXTURES_DIR, 'sample_nubank.csv'), 'utf-8');
       const transactions = parseCSV(content, nubankMapping);
 
-      const pix = transactions.find((t) =>
-        t.description.includes('ANA RITA'),
-      );
+      const pix = transactions.find((t) => t.description.includes('ANA RITA'));
       expect(pix!.amount).toBe(74.84);
       expect(pix!.type).toBe('expense');
 
-      const nuinvest = transactions.find((t) =>
-        t.description.includes('NuInvest'),
-      );
+      const nuinvest = transactions.find((t) => t.description.includes('NuInvest'));
       expect(nuinvest!.amount).toBe(49.78);
       expect(nuinvest!.type).toBe('income');
     });

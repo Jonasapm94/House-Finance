@@ -12,8 +12,7 @@ import type {
 export const categoriesApi = {
   list: () => apiClient.get<Category[]>('/categories').then((r) => r.data),
 
-  get: (id: number) =>
-    apiClient.get<Category>(`/categories/${id}`).then((r) => r.data),
+  get: (id: number) => apiClient.get<Category>(`/categories/${id}`).then((r) => r.data),
 
   create: (data: { name: string; color?: string }) =>
     apiClient.post<Category>('/categories', data).then((r) => r.data),
@@ -21,8 +20,7 @@ export const categoriesApi = {
   update: (id: number, data: { name?: string; color?: string }) =>
     apiClient.put<Category>(`/categories/${id}`, data).then((r) => r.data),
 
-  delete: (id: number) =>
-    apiClient.delete(`/categories/${id}`).then((r) => r.data),
+  delete: (id: number) => apiClient.delete(`/categories/${id}`).then((r) => r.data),
 };
 
 // === Transactions ===
@@ -61,8 +59,7 @@ export const transactionsApi = {
     description: string;
     type: 'income' | 'expense';
     category_id?: number | null;
-  }) =>
-    apiClient.post<Transaction>('/transactions', data).then((r) => r.data),
+  }) => apiClient.post<Transaction>('/transactions', data).then((r) => r.data),
 
   update: (
     id: number,
@@ -73,19 +70,14 @@ export const transactionsApi = {
       type?: 'income' | 'expense';
       category_id?: number | null;
     },
-  ) =>
-    apiClient
-      .put<Transaction>(`/transactions/${id}`, data)
-      .then((r) => r.data),
+  ) => apiClient.put<Transaction>(`/transactions/${id}`, data).then((r) => r.data),
 
-  delete: (id: number) =>
-    apiClient.delete(`/transactions/${id}`).then((r) => r.data),
+  delete: (id: number) => apiClient.delete(`/transactions/${id}`).then((r) => r.data),
 };
 
 // === Rules ===
 export const rulesApi = {
-  list: () =>
-    apiClient.get<CategorizationRule[]>('/rules').then((r) => r.data),
+  list: () => apiClient.get<CategorizationRule[]>('/rules').then((r) => r.data),
 
   get: (id: number) =>
     apiClient.get<CategorizationRule>(`/rules/${id}`).then((r) => r.data),
@@ -95,10 +87,7 @@ export const rulesApi = {
     pattern: string;
     match_type?: 'substring' | 'regex' | 'exact';
     priority?: number;
-  }) =>
-    apiClient
-      .post<CategorizationRule>('/rules', data)
-      .then((r) => r.data),
+  }) => apiClient.post<CategorizationRule>('/rules', data).then((r) => r.data),
 
   update: (
     id: number,
@@ -108,19 +97,13 @@ export const rulesApi = {
       match_type?: 'substring' | 'regex' | 'exact';
       priority?: number;
     },
-  ) =>
-    apiClient
-      .put<CategorizationRule>(`/rules/${id}`, data)
-      .then((r) => r.data),
+  ) => apiClient.put<CategorizationRule>(`/rules/${id}`, data).then((r) => r.data),
 
-  delete: (id: number) =>
-    apiClient.delete(`/rules/${id}`).then((r) => r.data),
+  delete: (id: number) => apiClient.delete(`/rules/${id}`).then((r) => r.data),
 
   apply: () =>
     apiClient
-      .post<{ categorizedCount: number; uncategorizedCount: number }>(
-        '/rules/apply',
-      )
+      .post<{ categorizedCount: number; uncategorizedCount: number }>('/rules/apply')
       .then((r) => r.data),
 };
 
@@ -175,9 +158,7 @@ export const uploadApi = {
 // === Dashboard ===
 export const dashboardApi = {
   summary: (params?: { from?: string; to?: string }) =>
-    apiClient
-      .get<DashboardSummary>('/dashboard/summary', { params })
-      .then((r) => r.data),
+    apiClient.get<DashboardSummary>('/dashboard/summary', { params }).then((r) => r.data),
 
   monthlyTrend: (months?: number) =>
     apiClient

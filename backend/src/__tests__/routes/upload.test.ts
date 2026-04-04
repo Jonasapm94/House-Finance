@@ -10,7 +10,6 @@ import Knex from 'knex';
 import { Model } from 'objection';
 import FormData from 'form-data';
 import { databasePlugin } from '../../plugins/database';
-import { Transaction, Category, Account, CategorizationRule, ImportLog } from '../../models';
 import { uploadRoutes } from '../../routes/upload';
 import { testDbConfig } from '../config';
 
@@ -134,7 +133,11 @@ describe('Upload API', () => {
 
       const form = new FormData();
       form.append('file', Buffer.from(ofxContent), 'test1.ofx');
-      form.append('file', Buffer.from(ofxContent.replace('OFX_MULTI_001', 'OFX_MULTI_002')), 'test2.ofx');
+      form.append(
+        'file',
+        Buffer.from(ofxContent.replace('OFX_MULTI_001', 'OFX_MULTI_002')),
+        'test2.ofx',
+      );
 
       const response = await app.inject({
         method: 'POST',
@@ -164,7 +167,13 @@ describe('Upload API', () => {
 
       const form = new FormData();
       form.append('file', Buffer.from(csvContent), 'test1.csv');
-      form.append('file', Buffer.from(csvContent.replace('Groceries', 'Restaurant').replace('-25.00', '-30.00')), 'test2.csv');
+      form.append(
+        'file',
+        Buffer.from(
+          csvContent.replace('Groceries', 'Restaurant').replace('-25.00', '-30.00'),
+        ),
+        'test2.csv',
+      );
       form.append('mapping', mapping);
 
       const response = await app.inject({

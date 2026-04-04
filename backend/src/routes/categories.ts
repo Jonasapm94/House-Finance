@@ -53,9 +53,7 @@ export async function categoryRoutes(fastify: FastifyInstance): Promise<void> {
       const { name, color } = request.body;
 
       // Check for duplicate name
-      const existing = await Category.query()
-        .where('name', name)
-        .first();
+      const existing = await Category.query().where('name', name).first();
 
       if (existing) {
         return reply.status(409).send({
@@ -143,9 +141,7 @@ export async function categoryRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       // Reassign orphaned transactions to null (will show as uncategorized)
-      await Transaction.query()
-        .where('category_id', id)
-        .patch({ category_id: null });
+      await Transaction.query().where('category_id', id).patch({ category_id: null });
 
       await Category.query().deleteById(id);
 

@@ -34,9 +34,13 @@ async function processFile(file: FileUpload): Promise<ImportResult> {
 export async function uploadRoutes(fastify: FastifyInstance): Promise<void> {
   fastify.post('/', async (request, reply) => {
     const parts = request.parts();
-    
+
     let sharedCsvMapping: FileUpload['csvMapping'] | undefined;
-    const fileBuffers: { filename: string; content: string; fileType: FileUpload['fileType'] }[] = [];
+    const fileBuffers: {
+      filename: string;
+      content: string;
+      fileType: FileUpload['fileType'];
+    }[] = [];
 
     for await (const part of parts) {
       if (part.type === 'file') {

@@ -94,32 +94,26 @@ function CategoriesPage() {
       {isLoading ? (
         <div className="loading">Loading...</div>
       ) : (
-      <div className="categories-grid">
-        {categories.map((cat) => (
-          <div key={cat.id} className="category-card">
-            <div
-              className="category-color"
-              style={{ background: cat.color }}
-            />
-            <div className="category-info">
-              <div className="name">{cat.name}</div>
-            </div>
-            <div className="category-actions">
-              <button className="btn-secondary" onClick={() => openEdit(cat)}>
-                Edit
-              </button>
-              {cat.name !== 'Uncategorized' && (
-                <button
-                  className="btn-danger"
-                  onClick={() => handleDelete(cat.id)}
-                >
-                  Del
+        <div className="categories-grid">
+          {categories.map((cat) => (
+            <div key={cat.id} className="category-card">
+              <div className="category-color" style={{ background: cat.color }} />
+              <div className="category-info">
+                <div className="name">{cat.name}</div>
+              </div>
+              <div className="category-actions">
+                <button className="btn-secondary" onClick={() => openEdit(cat)}>
+                  Edit
                 </button>
-              )}
+                {cat.name !== 'Uncategorized' && (
+                  <button className="btn-danger" onClick={() => handleDelete(cat.id)}>
+                    Del
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
       )}
 
       {showModal && (
@@ -144,10 +138,7 @@ function CategoriesPage() {
               />
             </div>
             <div className="form-actions">
-              <button
-                className="btn-secondary"
-                onClick={() => setShowModal(false)}
-              >
+              <button className="btn-secondary" onClick={() => setShowModal(false)}>
                 Cancel
               </button>
               <button className="btn-primary" onClick={handleSave}>

@@ -136,9 +136,7 @@ function findTransactionList(
 /**
  * Map a raw OFX transaction element to our ParsedTransaction interface.
  */
-function mapTransaction(
-  raw: Record<string, unknown>,
-): ParsedTransaction | null {
+function mapTransaction(raw: Record<string, unknown>): ParsedTransaction | null {
   const fitid = String(raw.FITID || raw.fitid || '').trim();
   const dateStr = String(raw.DTPOSTED || raw.dtposted || '').trim();
   const amountStr = String(raw.TRNAMT || raw.trnamt || '').trim();

@@ -1,0 +1,54 @@
+{
+  "name": "house-finance",
+  "version": "1.0.0",
+  "description": "A privacy-first personal finance dashboard for tracking household income and expenses. Runs entirely locally via Docker — no cloud services, no third-party data sharing.",
+  "main": "index.js",
+  "dependencies": {
+    "ansi-escapes": "^7.3.0",
+    "ansi-regex": "^6.2.2",
+    "ansi-styles": "^6.2.3",
+    "cli-cursor": "^5.0.0",
+    "cli-truncate": "^5.2.0",
+    "colorette": "^2.0.20",
+    "commander": "^14.0.3",
+    "emoji-regex": "^10.6.0",
+    "environment": "^1.1.0",
+    "eventemitter3": "^5.0.4",
+    "get-east-asian-width": "^1.5.0",
+    "husky": "^9.1.7",
+    "is-fullwidth-code-point": "^5.1.0",
+    "lint-staged": "^16.4.0",
+    "listr2": "^9.0.5",
+    "log-update": "^6.1.0",
+    "mimic-function": "^5.0.1",
+    "onetime": "^7.0.0",
+    "picomatch": "^4.0.4",
+    "restore-cursor": "^5.1.0",
+    "rfdc": "^1.4.1",
+    "signal-exit": "^4.1.0",
+    "slice-ansi": "^8.0.0",
+    "string-argv": "^0.3.2",
+    "string-width": "^8.2.0",
+    "strip-ansi": "^7.2.0",
+    "tinyexec": "^1.0.4",
+    "wrap-ansi": "^9.0.2",
+    "yaml": "^2.8.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jonasapm94/House-Finance.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Jonasapm94/House-Finance/issues"
+  },
+  "homepage": "https://github.com/Jonasapm94/House-Finance#readme"
+}

@@ -2,11 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { CategorizationRule } from '../models/CategorizationRule';
 import { CategorizationService } from '../services/CategorizationService';
-import {
-  CreateRuleSchema,
-  UpdateRuleSchema,
-  IdParamSchema,
-} from '../validators/schemas';
+import { CreateRuleSchema, UpdateRuleSchema, IdParamSchema } from '../validators/schemas';
 
 export async function ruleRoutes(fastify: FastifyInstance): Promise<void> {
   const app = fastify.withTypeProvider<ZodTypeProvider>();
@@ -121,8 +117,7 @@ export async function ruleRoutes(fastify: FastifyInstance): Promise<void> {
         }
       }
 
-      const updated = await CategorizationRule.query()
-        .patchAndFetchById(id, updates);
+      const updated = await CategorizationRule.query().patchAndFetchById(id, updates);
 
       const full = await CategorizationRule.query()
         .findById(updated.id)

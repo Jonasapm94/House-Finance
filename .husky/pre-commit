@@ -1,0 +1,10 @@
+# Get the directory of this script (git repo root)
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+# Auto-format both projects
+(cd "$REPO_ROOT/backend" && npm run format)
+(cd "$REPO_ROOT/frontend" && npm run format)
+
+# Check lint (blocks on errors)
+(cd "$REPO_ROOT/backend" && npm run lint)
+(cd "$REPO_ROOT/frontend" && npm run lint)

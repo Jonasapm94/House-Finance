@@ -99,9 +99,7 @@ function UploadPage() {
             amount: csvMapping.amount,
             description: csvMapping.description,
             ...(csvMapping.type ? { type: csvMapping.type } : {}),
-            ...(csvMapping.external_id
-              ? { external_id: csvMapping.external_id }
-              : {}),
+            ...(csvMapping.external_id ? { external_id: csvMapping.external_id } : {}),
           }
         : undefined;
 
@@ -109,8 +107,7 @@ function UploadPage() {
       setResult(res);
       setFiles([]);
     } catch (err) {
-      const msg =
-        err instanceof Error ? err.message : 'Upload failed';
+      const msg = err instanceof Error ? err.message : 'Upload failed';
       setError(msg);
     } finally {
       setUploading(false);
@@ -148,11 +145,7 @@ function UploadPage() {
             <div key={i} className="selected-file">
               <span className="filename">{f.name}</span>
               <span>({(f.size / 1024).toFixed(1)} KB)</span>
-              <button
-                className="btn-remove"
-                onClick={() => removeFile(i)}
-                type="button"
-              >
+              <button className="btn-remove" onClick={() => removeFile(i)} type="button">
                 ✕
               </button>
             </div>
@@ -186,18 +179,14 @@ function UploadPage() {
               <label>Date Column *</label>
               <input
                 value={csvMapping.date}
-                onChange={(e) =>
-                  setCsvMapping({ ...csvMapping, date: e.target.value })
-                }
+                onChange={(e) => setCsvMapping({ ...csvMapping, date: e.target.value })}
               />
             </div>
             <div className="mapping-field">
               <label>Amount Column *</label>
               <input
                 value={csvMapping.amount}
-                onChange={(e) =>
-                  setCsvMapping({ ...csvMapping, amount: e.target.value })
-                }
+                onChange={(e) => setCsvMapping({ ...csvMapping, amount: e.target.value })}
               />
             </div>
             <div className="mapping-field">
@@ -216,9 +205,7 @@ function UploadPage() {
               <label>Type Column (optional)</label>
               <input
                 value={csvMapping.type}
-                onChange={(e) =>
-                  setCsvMapping({ ...csvMapping, type: e.target.value })
-                }
+                onChange={(e) => setCsvMapping({ ...csvMapping, type: e.target.value })}
                 placeholder="e.g. Type"
               />
             </div>
@@ -242,7 +229,9 @@ function UploadPage() {
           disabled={files.length === 0 || uploading}
           onClick={handleUpload}
         >
-          {uploading ? 'Uploading...' : `Upload ${files.length} file${files.length !== 1 ? 's' : ''}`}
+          {uploading
+            ? 'Uploading...'
+            : `Upload ${files.length} file${files.length !== 1 ? 's' : ''}`}
         </button>
         {files.length > 0 && (
           <button
@@ -287,8 +276,8 @@ function UploadPage() {
               <ul>
                 {result.files.map((f, i) => (
                   <li key={i}>
-                    <strong>{f.filename}</strong>: {f.newCount} new,{' '}
-                    {f.duplicateCount} duplicate
+                    <strong>{f.filename}</strong>: {f.newCount} new, {f.duplicateCount}{' '}
+                    duplicate
                   </li>
                 ))}
               </ul>

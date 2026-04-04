@@ -34,14 +34,18 @@ vi.mock('../../services/api', () => ({
 // Mock recharts to avoid issues in JSDOM
 vi.mock('recharts', () => ({
   ResponsiveContainer: ({ children }: { children: React.ReactNode }) => children,
-  BarChart: ({ children }: { children: React.ReactNode }) => <div data-testid="bar-chart">{children}</div>,
+  BarChart: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="bar-chart">{children}</div>
+  ),
   Bar: () => null,
   XAxis: () => null,
   YAxis: () => null,
   CartesianGrid: () => null,
   Tooltip: () => null,
   Legend: () => null,
-  PieChart: ({ children }: { children: React.ReactNode }) => <div data-testid="pie-chart">{children}</div>,
+  PieChart: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="pie-chart">{children}</div>
+  ),
   Pie: () => null,
   Cell: () => null,
 }));
@@ -53,7 +57,9 @@ describe('DashboardPage', () => {
     vi.clearAllMocks();
     (dashboardApi.summary as ReturnType<typeof vi.fn>).mockResolvedValue(mockSummary);
     (dashboardApi.monthlyTrend as ReturnType<typeof vi.fn>).mockResolvedValue(mockTrend);
-    (dashboardApi.categoryBreakdown as ReturnType<typeof vi.fn>).mockResolvedValue(mockBreakdown);
+    (dashboardApi.categoryBreakdown as ReturnType<typeof vi.fn>).mockResolvedValue(
+      mockBreakdown,
+    );
   });
 
   const renderPage = () =>
@@ -98,7 +104,9 @@ describe('DashboardPage', () => {
   it('calls API with date range params when months > 0', async () => {
     (dashboardApi.summary as ReturnType<typeof vi.fn>).mockResolvedValue(mockSummary);
     (dashboardApi.monthlyTrend as ReturnType<typeof vi.fn>).mockResolvedValue(mockTrend);
-    (dashboardApi.categoryBreakdown as ReturnType<typeof vi.fn>).mockResolvedValue(mockBreakdown);
+    (dashboardApi.categoryBreakdown as ReturnType<typeof vi.fn>).mockResolvedValue(
+      mockBreakdown,
+    );
 
     renderPage();
 

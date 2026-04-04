@@ -24,10 +24,7 @@ function RulesPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const [r, c] = await Promise.all([
-        rulesApi.list(),
-        categoriesApi.list(),
-      ]);
+      const [r, c] = await Promise.all([rulesApi.list(), categoriesApi.list()]);
       setRules(r);
       setCategories(c);
     } catch (err) {
@@ -124,11 +121,7 @@ function RulesPage() {
       <div className="rules-header">
         <h2>Categorization Rules</h2>
         <div className="btn-group">
-          <button
-            className="btn-secondary"
-            onClick={handleApplyAll}
-            disabled={applying}
-          >
+          <button className="btn-secondary" onClick={handleApplyAll} disabled={applying}>
             {applying ? 'Applying…' : 'Re-apply All Rules'}
           </button>
           <button className="btn-primary" onClick={openAdd}>
@@ -168,25 +161,17 @@ function RulesPage() {
                   <code>{rule.pattern}</code>
                 </td>
                 <td>
-                  <span
-                    className={`match-type-badge ${rule.match_type}`}
-                  >
+                  <span className={`match-type-badge ${rule.match_type}`}>
                     {rule.match_type}
                   </span>
                 </td>
                 <td>{getCategoryName(rule.category_id)}</td>
                 <td>
                   <div className="actions-cell">
-                    <button
-                      className="btn-secondary"
-                      onClick={() => openEdit(rule)}
-                    >
+                    <button className="btn-secondary" onClick={() => openEdit(rule)}>
                       Edit
                     </button>
-                    <button
-                      className="btn-danger"
-                      onClick={() => handleDelete(rule.id)}
-                    >
+                    <button className="btn-danger" onClick={() => handleDelete(rule.id)}>
                       Del
                     </button>
                   </div>
@@ -246,16 +231,11 @@ function RulesPage() {
               <input
                 type="number"
                 value={form.priority}
-                onChange={(e) =>
-                  setForm({ ...form, priority: Number(e.target.value) })
-                }
+                onChange={(e) => setForm({ ...form, priority: Number(e.target.value) })}
               />
             </div>
             <div className="form-actions">
-              <button
-                className="btn-secondary"
-                onClick={() => setShowModal(false)}
-              >
+              <button className="btn-secondary" onClick={() => setShowModal(false)}>
                 Cancel
               </button>
               <button className="btn-primary" onClick={handleSave}>

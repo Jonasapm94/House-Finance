@@ -159,9 +159,7 @@ function TransactionsPage() {
           <input
             placeholder="Search description..."
             value={filters.search ?? ''}
-            onChange={(e) =>
-              setFilters({ ...filters, search: e.target.value, page: 1 })
-            }
+            onChange={(e) => setFilters({ ...filters, search: e.target.value, page: 1 })}
           />
         </div>
 
@@ -202,10 +200,7 @@ function TransactionsPage() {
             onChange={(e) =>
               setFilters({
                 ...filters,
-                type: (e.target.value || undefined) as
-                  | 'income'
-                  | 'expense'
-                  | undefined,
+                type: (e.target.value || undefined) as 'income' | 'expense' | undefined,
                 page: 1,
               })
             }
@@ -224,22 +219,25 @@ function TransactionsPage() {
               const val = e.target.value;
               setFilters({
                 ...filters,
-                category_id: val === 'uncategorized'
-                  ? 'uncategorized'
-                  : val
-                    ? parseInt(val)
-                    : undefined,
+                category_id:
+                  val === 'uncategorized'
+                    ? 'uncategorized'
+                    : val
+                      ? parseInt(val)
+                      : undefined,
                 page: 1,
               });
             }}
           >
             <option value="">All</option>
             <option value="uncategorized">Uncategorized</option>
-            {categories.filter((c) => c.name !== 'Uncategorized').map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
+            {categories
+              .filter((c) => c.name !== 'Uncategorized')
+              .map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
           </select>
         </div>
 
@@ -253,89 +251,83 @@ function TransactionsPage() {
       {isLoading ? (
         <div className="loading">Loading...</div>
       ) : (
-      <>
-      <div className="transactions-table">
-        {transactions.length === 0 ? (
-          <div className="no-data">No transactions found</div>
-        ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Description</th>
-                <th>Category</th>
-                <th>Amount</th>
-                <th>Source</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transactions.map((txn) => (
-                <tr key={txn.id}>
-                  <td>{txn.date}</td>
-                  <td>{txn.description}</td>
-                  <td>
-                    <span
-                      className="category-badge"
-                      style={{
-                        borderLeft: `3px solid ${txn.category?.color ?? '#94a3b8'}`,
-                      }}
-                    >
-                      {txn.category?.name ?? 'Uncategorized'}
-                    </span>
-                  </td>
-                  <td
-                    className={
-                      txn.type === 'income'
-                        ? 'amount-income'
-                        : 'amount-expense'
-                    }
-                  >
-                    {formatAmount(txn.amount, txn.type)}
-                  </td>
-                  <td>{txn.source}</td>
-                  <td className="table-actions">
-                    <button
-                      className="btn-secondary"
-                      onClick={() => openEdit(txn)}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="btn-danger"
-                      onClick={() => handleDelete(txn.id)}
-                    >
-                      Del
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+        <>
+          <div className="transactions-table">
+            {transactions.length === 0 ? (
+              <div className="no-data">No transactions found</div>
+            ) : (
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Source</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {transactions.map((txn) => (
+                    <tr key={txn.id}>
+                      <td>{txn.date}</td>
+                      <td>{txn.description}</td>
+                      <td>
+                        <span
+                          className="category-badge"
+                          style={{
+                            borderLeft: `3px solid ${txn.category?.color ?? '#94a3b8'}`,
+                          }}
+                        >
+                          {txn.category?.name ?? 'Uncategorized'}
+                        </span>
+                      </td>
+                      <td
+                        className={
+                          txn.type === 'income' ? 'amount-income' : 'amount-expense'
+                        }
+                      >
+                        {formatAmount(txn.amount, txn.type)}
+                      </td>
+                      <td>{txn.source}</td>
+                      <td className="table-actions">
+                        <button className="btn-secondary" onClick={() => openEdit(txn)}>
+                          Edit
+                        </button>
+                        <button
+                          className="btn-danger"
+                          onClick={() => handleDelete(txn.id)}
+                        >
+                          Del
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
 
-      <div className="pagination">
-        <button
-          className="btn-secondary"
-          disabled={pagination.page <= 1}
-          onClick={() => setFilters({ ...filters, page: pagination.page - 1 })}
-        >
-          Prev
-        </button>
-        <span className="page-info">
-          Page {pagination.page} of {pagination.totalPages} ({pagination.total}{' '}
-          total)
-        </span>
-        <button
-          className="btn-secondary"
-          disabled={pagination.page >= pagination.totalPages}
-          onClick={() => setFilters({ ...filters, page: pagination.page + 1 })}
-        >
-          Next
-        </button>
-      </div>
-      </>
+          <div className="pagination">
+            <button
+              className="btn-secondary"
+              disabled={pagination.page <= 1}
+              onClick={() => setFilters({ ...filters, page: pagination.page - 1 })}
+            >
+              Prev
+            </button>
+            <span className="page-info">
+              Page {pagination.page} of {pagination.totalPages} ({pagination.total} total)
+            </span>
+            <button
+              className="btn-secondary"
+              disabled={pagination.page >= pagination.totalPages}
+              onClick={() => setFilters({ ...filters, page: pagination.page + 1 })}
+            >
+              Next
+            </button>
+          </div>
+        </>
       )}
 
       {showModal && (
@@ -357,9 +349,7 @@ function TransactionsPage() {
               <label>Description</label>
               <input
                 value={form.description}
-                onChange={(e) =>
-                  setForm({ ...form, description: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
               />
             </div>
 
@@ -394,9 +384,7 @@ function TransactionsPage() {
               <label>Category</label>
               <select
                 value={form.category_id}
-                onChange={(e) =>
-                  setForm({ ...form, category_id: e.target.value })
-                }
+                onChange={(e) => setForm({ ...form, category_id: e.target.value })}
               >
                 <option value="">Uncategorized</option>
                 {categories.map((c) => (
@@ -408,10 +396,7 @@ function TransactionsPage() {
             </div>
 
             <div className="form-actions">
-              <button
-                className="btn-secondary"
-                onClick={() => setShowModal(false)}
-              >
+              <button className="btn-secondary" onClick={() => setShowModal(false)}>
                 Cancel
               </button>
               <button className="btn-primary" onClick={handleSave}>

@@ -8,9 +8,7 @@ import {
   TransactionFilterSchema,
 } from '../validators/schemas';
 
-export async function transactionRoutes(
-  fastify: FastifyInstance,
-): Promise<void> {
+export async function transactionRoutes(fastify: FastifyInstance): Promise<void> {
   const app = fastify.withTypeProvider<ZodTypeProvider>();
 
   // GET /api/transactions — List transactions (paginated, filterable)
@@ -22,8 +20,7 @@ export async function transactionRoutes(
       },
     },
     async (request) => {
-      const { page, limit, from, to, category_id, type, search } =
-        request.query;
+      const { page, limit, from, to, category_id, type, search } = request.query;
 
       const query = Transaction.query()
         .withGraphFetched('category')
@@ -105,8 +102,7 @@ export async function transactionRoutes(
       },
     },
     async (request, reply) => {
-      const { date, amount, description, type, category_id, account_id } =
-        request.body;
+      const { date, amount, description, type, category_id, account_id } = request.body;
 
       const transaction = await Transaction.query().insert({
         date,

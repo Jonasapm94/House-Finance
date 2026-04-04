@@ -37,9 +37,7 @@ export class ImportService {
     const totalCount = parsed.length;
 
     // 2. Deduplicate — find which external_ids already exist
-    const externalIds = parsed
-      .map((t) => t.external_id)
-      .filter(Boolean) as string[];
+    const externalIds = parsed.map((t) => t.external_id).filter(Boolean) as string[];
 
     const existingIds = new Set<string>();
     if (externalIds.length > 0) {
