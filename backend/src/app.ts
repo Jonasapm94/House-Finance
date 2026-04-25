@@ -13,6 +13,7 @@ import { categoryRoutes } from './routes/categories';
 import { transactionRoutes } from './routes/transactions';
 import { ruleRoutes } from './routes/rules';
 import { dashboardRoutes } from './routes/dashboard';
+import { aiCategorizationRoutes } from './routes/aiCategorization';
 
 export async function buildApp(
   opts: { logger?: boolean } = {},
@@ -59,6 +60,7 @@ export async function buildApp(
   await app.register(transactionRoutes, { prefix: '/api/transactions' });
   await app.register(ruleRoutes, { prefix: '/api/rules' });
   await app.register(dashboardRoutes, { prefix: '/api/dashboard' });
+  await app.register(aiCategorizationRoutes, { prefix: '/api/ai-categorization' });
 
   // Health check
   app.get('/api/health', async () => ({ status: 'ok' }));

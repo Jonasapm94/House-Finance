@@ -125,3 +125,80 @@
   padding: 3rem;
   color: var(--color-text-muted);
 }
+
+/* AI Categorization */
+.modal--wide {
+  max-width: 900px;
+  width: 95vw;
+}
+
+.modal-description {
+  color: var(--color-text-muted);
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.ai-mode-actions {
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.success-banner {
+  background: #dcfce7;
+  border: 1px solid #16a34a;
+  color: #166534;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.success-banner button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: inherit;
+}
+
+.ai-review-table-wrapper {
+  overflow-x: auto;
+  margin-bottom: 1rem;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.ai-review-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.ai-review-table th,
+.ai-review-table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.ai-review-table th {
+  font-weight: 600;
+  background: var(--color-surface);
+  position: sticky;
+  top: 0;
+}
+
+.ai-review-table input,
+.ai-review-table select {
+  width: 100%;
+  min-width: 0;
+}
+
+.ai-explanation {
+  color: var(--color-text-muted);
+  font-style: italic;
+  max-width: 200px;
+}
