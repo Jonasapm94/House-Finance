@@ -156,6 +156,39 @@ export const uploadApi = {
   },
 };
 
+// === AI Categorization ===
+export interface AiSuggestion {
+  transaction_id: number;
+  description: string;
+  suggested_category_id: number;
+  rule_pattern: string;
+  explanation: string;
+}
+
+export interface AiSuggestResult {
+  suggestions: AiSuggestion[];
+  skipped: number;
+}
+
+export interface AiApplyResult {
+  categorized: number;
+  rules_created: number;
+  skipped: number;
+}
+
+export const aiCategorizationApi = {
+  suggest: () =>
+    apiClient.post<AiSuggestResult>('/ai-categorization/suggest').then((r) => r.data),
+
+  apply: (suggestions: AiSuggestion[]) =>
+    apiClient
+      .post<AiApplyResult>('/ai-categorization/apply', { suggestions })
+      .then((r) => r.data),
+
+  auto: () =>
+    apiClient.post<AiApplyResult>('/ai-categorization/auto').then((r) => r.data),
+};
+
 // === Dashboard ===
 export const dashboardApi = {
   summary: (params?: { from?: string; to?: string }) =>

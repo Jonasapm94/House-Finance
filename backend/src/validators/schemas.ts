@@ -100,6 +100,18 @@ export const CategoryTrendQuerySchema = MonthlyTrendQuerySchema.extend({
   category_id: z.coerce.number().int().positive(),
 });
 
+// === AI Categorization Schemas ===
+export const AiSuggestionInputSchema = z.object({
+  transaction_id: z.number().int().positive(),
+  suggested_category_id: z.number().int().positive(),
+  rule_pattern: z.string().min(1),
+  explanation: z.string(),
+});
+
+export const AiApplyBodySchema = z.object({
+  suggestions: z.array(AiSuggestionInputSchema).min(1),
+});
+
 // === Upload Schema ===
 export const CSVMappingSchema = z.object({
   date: z.string().min(1),

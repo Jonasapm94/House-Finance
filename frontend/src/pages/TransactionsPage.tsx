@@ -1,8 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
-import { transactionsApi, categoriesApi } from '../services/api';
-import type { TransactionFilters } from '../services/api';
+import { transactionsApi, categoriesApi, aiCategorizationApi } from '../services/api';
+import type { TransactionFilters, AiSuggestion, AiApplyResult } from '../services/api';
 import type { Transaction, Category } from '../types';
 import './TransactionsPage.css';
+
+function extractErrorMessage(err: unknown): string {
+  if (err && typeof err === 'object' && 'response' in err) {
+    const axiosErr = err as { response?: { data?: { message?: string } } };
+    if (axiosErr.response?.data?.message) return axiosErr.response.data.message;
+  }
+  if (err instanceof Error) return err.message;
+  return 'Erro desconhecido. Tente novamente.';
+}
 
 function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -29,6 +38,14 @@ function TransactionsPage() {
     type: 'expense' as 'income' | 'expense',
     category_id: '' as string,
   });
+
+  // AI Categorization state
+  const [showAiModeModal, setShowAiModeModal] = useState(false);
+  const [showAiReviewModal, setShowAiReviewModal] = useState(false);
+  const [aiSuggestions, setAiSuggestions] = useState<AiSuggestion[]>([]);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiResult, setAiResult] = useState<AiApplyResult | null>(null);
 
   const fetchTransactions = useCallback(async () => {
     setIsLoading(true);
@@ -140,6 +157,68 @@ function TransactionsPage() {
     }
   };
 
+  const handleAiAutoApply = async () => {
+    setShowAiModeModal(false);
+    setAiLoading(true);
+    setAiError(null);
+    setAiResult(null);
+    try {
+      const result = await aiCategorizationApi.auto();
+      setAiResult(result);
+      fetchTransactions();
+    } catch (err) {
+      setAiError(extractErrorMessage(err));
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleAiSuggest = async () => {
+    setShowAiModeModal(false);
+    setAiLoading(true);
+    setAiError(null);
+    try {
+      const result = await aiCategorizationApi.suggest();
+      if (result.suggestions.length === 0) {
+        setAiError('Nenhuma sugestão gerada. Verifique se há transações sem categoria.');
+        return;
+      }
+      setAiSuggestions(result.suggestions);
+      setShowAiReviewModal(true);
+    } catch (err) {
+      setAiError(extractErrorMessage(err));
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const handleAiApplyReviewed = async () => {
+    setShowAiReviewModal(false);
+    setAiLoading(true);
+    setAiError(null);
+    try {
+      const result = await aiCategorizationApi.apply(aiSuggestions);
+      setAiResult(result);
+      fetchTransactions();
+    } catch (err) {
+      setAiError(extractErrorMessage(err));
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const rejectAiSuggestion = (transactionId: number) => {
+    setAiSuggestions((prev) => prev.filter((s) => s.transaction_id !== transactionId));
+  };
+
+  const updateAiSuggestion = (transactionId: number, field: keyof AiSuggestion, value: string | number) => {
+    setAiSuggestions((prev) =>
+      prev.map((s) =>
+        s.transaction_id === transactionId ? { ...s, [field]: value } : s,
+      ),
+    );
+  };
+
   const formatAmount = (amount: string, type: string) => {
     const n = parseFloat(amount);
     const formatted = n.toLocaleString('en-US', {
@@ -244,7 +323,34 @@ function TransactionsPage() {
         <button className="btn-primary" onClick={openAdd}>
           + Add Transaction
         </button>
+        <button
+          className="btn-secondary"
+          onClick={() => setShowAiModeModal(true)}
+          disabled={aiLoading}
+          data-testid="ai-categorize-btn"
+        >
+          {aiLoading ? 'Processando...' : 'Categorizar com IA'}
+        </button>
       </div>
+
+      {aiResult && (
+        <div className="success-banner">
+          <span>
+            {aiResult.categorized} transações categorizadas, {aiResult.rules_created} regras
+            criadas.
+          </span>
+          <button onClick={() => setAiResult(null)}>×</button>
+        </div>
+      )}
+
+      {aiError && (
+        <div className="error-banner">
+          {aiError}
+          <button onClick={() => setAiError(null)} style={{ marginLeft: '0.5rem' }}>
+            ×
+          </button>
+        </div>
+      )}
 
       {error && <div className="error-banner">{error}</div>}
 
@@ -330,6 +436,7 @@ function TransactionsPage() {
         </>
       )}
 
+      {/* Transaction add/edit modal */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -401,6 +508,129 @@ function TransactionsPage() {
               </button>
               <button className="btn-primary" onClick={handleSave}>
                 {editingTxn ? 'Save Changes' : 'Add'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI mode selection modal */}
+      {showAiModeModal && (
+        <div className="modal-overlay" onClick={() => setShowAiModeModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Categorizar com IA</h3>
+            <p className="modal-description">
+              Como você quer aplicar as sugestões da IA?
+            </p>
+            <div className="form-actions ai-mode-actions">
+              <button className="btn-secondary" onClick={() => setShowAiModeModal(false)}>
+                Cancelar
+              </button>
+              <button
+                className="btn-secondary"
+                onClick={handleAiSuggest}
+                data-testid="ai-review-btn"
+              >
+                Revisar sugestões
+              </button>
+              <button
+                className="btn-primary"
+                onClick={handleAiAutoApply}
+                data-testid="ai-auto-btn"
+              >
+                Automático
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI review modal */}
+      {showAiReviewModal && (
+        <div className="modal-overlay" onClick={() => setShowAiReviewModal(false)}>
+          <div
+            className="modal modal--wide"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3>Revisar sugestões da IA</h3>
+            <p className="modal-description">
+              {aiSuggestions.length} sugestões. Edite o padrão da regra ou rejeite linhas antes
+              de confirmar.
+            </p>
+            <div className="ai-review-table-wrapper">
+              <table className="ai-review-table">
+                <thead>
+                  <tr>
+                    <th>Descrição</th>
+                    <th>Categoria</th>
+                    <th>Padrão da Regra</th>
+                    <th>Explicação</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {aiSuggestions.map((s) => (
+                    <tr key={s.transaction_id}>
+                      <td>{s.description}</td>
+                      <td>
+                        <select
+                          value={s.suggested_category_id}
+                          onChange={(e) =>
+                            updateAiSuggestion(
+                              s.transaction_id,
+                              'suggested_category_id',
+                              parseInt(e.target.value),
+                            )
+                          }
+                        >
+                          {categories.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.name}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td>
+                        <input
+                          value={s.rule_pattern}
+                          onChange={(e) =>
+                            updateAiSuggestion(
+                              s.transaction_id,
+                              'rule_pattern',
+                              e.target.value,
+                            )
+                          }
+                        />
+                      </td>
+                      <td className="ai-explanation">{s.explanation}</td>
+                      <td>
+                        <button
+                          className="btn-danger"
+                          onClick={() => rejectAiSuggestion(s.transaction_id)}
+                          data-testid={`reject-${s.transaction_id}`}
+                        >
+                          Rejeitar
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="form-actions">
+              <button
+                className="btn-secondary"
+                onClick={() => setShowAiReviewModal(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                className="btn-primary"
+                onClick={handleAiApplyReviewed}
+                disabled={aiSuggestions.length === 0}
+                data-testid="ai-confirm-btn"
+              >
+                Confirmar ({aiSuggestions.length})
               </button>
             </div>
           </div>
