@@ -1,6 +1,10 @@
 import { FastifyInstance } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
-import { DashboardQuerySchema, MonthlyTrendQuerySchema } from '../validators/schemas';
+import {
+  DashboardQuerySchema,
+  MonthlyTrendQuerySchema,
+  CategoryTrendQuerySchema,
+} from '../validators/schemas';
 import { DEFAULT_CATEGORY_NAME, DEFAULT_CATEGORY_COLOR } from '../constants';
 
 export async function dashboardRoutes(fastify: FastifyInstance): Promise<void> {
@@ -65,7 +69,7 @@ export async function dashboardRoutes(fastify: FastifyInstance): Promise<void> {
             "COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) as expenses",
           ),
         )
-        .where('date', '>=', knex.raw(`CURRENT_DATE - INTERVAL '${months} months'`))
+        .where('date', '>=', knex.raw("CURRENT_DATE - (? * INTERVAL '1 month')", [months]))
         .groupByRaw("TO_CHAR(date, 'YYYY-MM')")
         .orderByRaw("TO_CHAR(date, 'YYYY-MM') ASC");
 
@@ -106,6 +110,33 @@ export async function dashboardRoutes(fastify: FastifyInstance): Promise<void> {
       }
 
       return query;
+    },
+  );
+
+  // GET /api/dashboard/category-trend — Monthly expenses for a specific category
+  app.get(
+    '/category-trend',
+    {
+      schema: {
+        querystring: CategoryTrendQuerySchema,
+      },
+    },
+    async (request) => {
+      const { category_id, months } = request.query;
+      const knex = fastify.knex;
+
+      const result = await knex('transactions')
+        .select(
+          knex.raw("TO_CHAR(date, 'YYYY-MM') as month"),
+          knex.raw('COALESCE(SUM(amount), 0) as amount'),
+        )
+        .where('type', 'expense')
+        .where('category_id', category_id)
+        .where('date', '>=', knex.raw("CURRENT_DATE - (? * INTERVAL '1 month')", [months]))
+        .groupByRaw("TO_CHAR(date, 'YYYY-MM')")
+        .orderByRaw("TO_CHAR(date, 'YYYY-MM') ASC");
+
+      return result;
     },
   );
 }

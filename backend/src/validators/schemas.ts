@@ -96,6 +96,10 @@ export const MonthlyTrendQuerySchema = z.object({
   months: z.coerce.number().int().min(1).max(24).optional().default(6),
 });
 
+export const CategoryTrendQuerySchema = MonthlyTrendQuerySchema.extend({
+  category_id: z.coerce.number().int().positive(),
+});
+
 // === Upload Schema ===
 export const CSVMappingSchema = z.object({
   date: z.string().min(1),

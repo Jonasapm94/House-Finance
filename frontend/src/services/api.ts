@@ -6,6 +6,7 @@ import type {
   DashboardSummary,
   MonthlyTrend,
   CategoryBreakdown,
+  CategoryTrend,
 } from '../types';
 
 // === Categories ===
@@ -171,6 +172,13 @@ export const dashboardApi = {
     apiClient
       .get<CategoryBreakdown[]>('/dashboard/category-breakdown', {
         params,
+      })
+      .then((r) => r.data),
+
+  categoryTrend: (categoryId: number, months?: number) =>
+    apiClient
+      .get<CategoryTrend[]>('/dashboard/category-trend', {
+        params: { category_id: categoryId, months },
       })
       .then((r) => r.data),
 };

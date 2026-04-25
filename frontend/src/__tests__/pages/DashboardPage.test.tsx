@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import DashboardPage from '../../pages/DashboardPage';
@@ -28,6 +28,13 @@ vi.mock('../../services/api', () => ({
     }),
     monthlyTrend: vi.fn().mockResolvedValue([]),
     categoryBreakdown: vi.fn().mockResolvedValue([]),
+    categoryTrend: vi.fn().mockResolvedValue([]),
+  },
+  categoriesApi: {
+    list: vi.fn().mockResolvedValue([
+      { id: 1, name: 'Snacks', color: '#f59e0b' },
+      { id: 2, name: 'Transport', color: '#3b82f6' },
+    ]),
   },
 }));
 
@@ -48,9 +55,17 @@ vi.mock('recharts', () => ({
   ),
   Pie: () => null,
   Cell: () => null,
+  LineChart: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="line-chart">{children}</div>
+  ),
+  Line: () => null,
+  AreaChart: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="area-chart">{children}</div>
+  ),
+  Area: () => null,
 }));
 
-import { dashboardApi } from '../../services/api';
+import { dashboardApi, categoriesApi } from '../../services/api';
 
 describe('DashboardPage', () => {
   beforeEach(() => {
@@ -60,6 +75,11 @@ describe('DashboardPage', () => {
     (dashboardApi.categoryBreakdown as ReturnType<typeof vi.fn>).mockResolvedValue(
       mockBreakdown,
     );
+    (dashboardApi.categoryTrend as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+    (categoriesApi.list as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { id: 1, name: 'Snacks', color: '#f59e0b' },
+      { id: 2, name: 'Transport', color: '#3b82f6' },
+    ]);
   });
 
   const renderPage = () =>
@@ -138,6 +158,174 @@ describe('DashboardPage', () => {
     await waitFor(() => {
       const noDataElements = screen.getAllByText('No data for selected period');
       expect(noDataElements).toHaveLength(2);
+    });
+  });
+
+  it('renders category dropdown with categories', async () => {
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getByText('Category Monthly Expenses')).toBeInTheDocument();
+      expect(screen.getByText('Select a category...')).toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(screen.getByRole('option', { name: 'Snacks' })).toBeInTheDocument();
+      expect(screen.getByRole('option', { name: 'Transport' })).toBeInTheDocument();
+    });
+  });
+
+  it('shows prompt message when no category is selected', async () => {
+    renderPage();
+    await waitFor(() => {
+      expect(
+        screen.getByText('Select a category to view monthly expenses'),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it('fetches category trend when category is selected', async () => {
+    (dashboardApi.categoryTrend as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { month: '2025-01', amount: '150.00' },
+      { month: '2025-02', amount: '200.00' },
+    ]);
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText('Category Monthly Expenses')).toBeInTheDocument();
+    });
+
+    const categorySelect = screen.getByDisplayValue('Select a category...');
+    fireEvent.change(categorySelect, { target: { value: '1' } });
+
+    await waitFor(() => {
+      expect(dashboardApi.categoryTrend).toHaveBeenCalledWith(1, 6);
+    });
+  });
+
+  it('renders line chart when category trend data is available', async () => {
+    (dashboardApi.categoryTrend as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { month: '2025-01', amount: '150.00' },
+      { month: '2025-02', amount: '200.00' },
+    ]);
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText('Category Monthly Expenses')).toBeInTheDocument();
+    });
+
+    const categorySelect = screen.getByDisplayValue('Select a category...');
+    fireEvent.change(categorySelect, { target: { value: '1' } });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('line-chart')).toBeInTheDocument();
+    });
+  });
+
+  it('shows no-data message when category has no expenses', async () => {
+    (dashboardApi.categoryTrend as ReturnType<typeof vi.fn>).mockResolvedValue([]);
+
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText('Category Monthly Expenses')).toBeInTheDocument();
+    });
+
+    const categorySelect = screen.getByDisplayValue('Select a category...');
+    fireEvent.change(categorySelect, { target: { value: '1' } });
+
+    await waitFor(() => {
+      expect(screen.getByText('No expense data for this category')).toBeInTheDocument();
+    });
+  });
+
+  it('renders chart type selector with Line, Bar, Area options', async () => {
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getByText('Category Monthly Expenses')).toBeInTheDocument();
+    });
+    expect(screen.getByDisplayValue('Line')).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Bar' })).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Area' })).toBeInTheDocument();
+  });
+
+  it('switches to bar chart when Bar is selected', async () => {
+    (dashboardApi.categoryTrend as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { month: '2025-01', amount: '150.00' },
+    ]);
+
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getByText('Category Monthly Expenses')).toBeInTheDocument();
+    });
+
+    const categorySelect = screen.getByDisplayValue('Select a category...');
+    fireEvent.change(categorySelect, { target: { value: '1' } });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('line-chart')).toBeInTheDocument();
+    });
+
+    const chartTypeSelect = screen.getByDisplayValue('Line');
+    fireEvent.change(chartTypeSelect, { target: { value: 'bar' } });
+
+    await waitFor(() => {
+      // Two bar charts: main monthly trend + category trend
+      expect(screen.getAllByTestId('bar-chart')).toHaveLength(2);
+    });
+  });
+
+  it('switches to area chart when Area is selected', async () => {
+    (dashboardApi.categoryTrend as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { month: '2025-01', amount: '150.00' },
+    ]);
+
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getByText('Category Monthly Expenses')).toBeInTheDocument();
+    });
+
+    const categorySelect = screen.getByDisplayValue('Select a category...');
+    fireEvent.change(categorySelect, { target: { value: '1' } });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('line-chart')).toBeInTheDocument();
+    });
+
+    const chartTypeSelect = screen.getByDisplayValue('Line');
+    fireEvent.change(chartTypeSelect, { target: { value: 'area' } });
+
+    await waitFor(() => {
+      expect(screen.getByTestId('area-chart')).toBeInTheDocument();
+    });
+  });
+
+  it('has its own time range selector for category trend', async () => {
+    (dashboardApi.categoryTrend as ReturnType<typeof vi.fn>).mockResolvedValue([
+      { month: '2025-01', amount: '100.00' },
+    ]);
+
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getByText('Category Monthly Expenses')).toBeInTheDocument();
+    });
+
+    // Select a category first
+    const categorySelect = screen.getByDisplayValue('Select a category...');
+    fireEvent.change(categorySelect, { target: { value: '1' } });
+
+    await waitFor(() => {
+      expect(dashboardApi.categoryTrend).toHaveBeenCalledWith(1, 6);
+    });
+
+    // Change the category time range to 12 months
+    // The category trend section has its own period selector (default "Last 6 months")
+    const periodSelects = screen.getAllByDisplayValue('Last 6 months');
+    const categoryPeriodSelect = periodSelects[periodSelects.length - 1];
+    fireEvent.change(categoryPeriodSelect, { target: { value: '12' } });
+
+    await waitFor(() => {
+      expect(dashboardApi.categoryTrend).toHaveBeenCalledWith(1, 12);
     });
   });
 });
