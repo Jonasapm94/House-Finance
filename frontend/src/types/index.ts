@@ -72,3 +72,8 @@ export interface CategoryBreakdown {
   amount: string;
   color: string;
 }
+
+export interface CategoryTrend {
+  month: string;
+  amount: string;
+}

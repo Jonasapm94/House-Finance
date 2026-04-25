@@ -274,6 +274,157 @@ describe('Dashboard API', () => {
     });
   });
 
+  describe('GET /api/dashboard/category-trend', () => {
+    beforeEach(async () => {
+      await knex('categories').del();
+      await knex('categories').insert([
+        { id: 1, name: 'Snacks', color: '#f59e0b' },
+        { id: 2, name: 'Transport', color: '#3b82f6' },
+      ]);
+    });
+
+    it('should return empty array when no transactions exist for the category', async () => {
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/dashboard/category-trend?category_id=1',
+      });
+
+      expect(response.statusCode).toBe(200);
+      const body = JSON.parse(response.body);
+      expect(body).toHaveLength(0);
+    });
+
+    it('should return monthly expense totals for the specified category', async () => {
+      const now = new Date();
+      const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+      await createTransaction({
+        date: `${thisMonth}-10`,
+        amount: 50,
+        description: 'Chips',
+        type: 'expense',
+        category_id: 1,
+      });
+      await createTransaction({
+        date: `${thisMonth}-20`,
+        amount: 30,
+        description: 'Cookies',
+        type: 'expense',
+        category_id: 1,
+      });
+
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/dashboard/category-trend?category_id=1&months=3',
+      });
+
+      expect(response.statusCode).toBe(200);
+      const body = JSON.parse(response.body);
+      const thisMonthData = body.find((m: { month: string }) => m.month === thisMonth);
+      expect(thisMonthData).toBeDefined();
+      expect(Number(thisMonthData.amount)).toBe(80);
+    });
+
+    it('should exclude income transactions', async () => {
+      const now = new Date();
+      const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+      await createTransaction({
+        date: `${thisMonth}-10`,
+        amount: 100,
+        description: 'Snack income',
+        type: 'income',
+        category_id: 1,
+      });
+      await createTransaction({
+        date: `${thisMonth}-15`,
+        amount: 25,
+        description: 'Candy',
+        type: 'expense',
+        category_id: 1,
+      });
+
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/dashboard/category-trend?category_id=1&months=3',
+      });
+
+      expect(response.statusCode).toBe(200);
+      const body = JSON.parse(response.body);
+      expect(body).toHaveLength(1);
+      expect(Number(body[0].amount)).toBe(25);
+    });
+
+    it('should exclude transactions from other categories', async () => {
+      const now = new Date();
+      const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+      await createTransaction({
+        date: `${thisMonth}-10`,
+        amount: 40,
+        description: 'Snack',
+        type: 'expense',
+        category_id: 1,
+      });
+      await createTransaction({
+        date: `${thisMonth}-10`,
+        amount: 200,
+        description: 'Bus pass',
+        type: 'expense',
+        category_id: 2,
+      });
+
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/dashboard/category-trend?category_id=1&months=3',
+      });
+
+      expect(response.statusCode).toBe(200);
+      const body = JSON.parse(response.body);
+      expect(body).toHaveLength(1);
+      expect(Number(body[0].amount)).toBe(40);
+    });
+
+    it('should respect months parameter', async () => {
+      const now = new Date();
+      const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+      await createTransaction({
+        date: `${thisMonth}-10`,
+        amount: 30,
+        description: 'Recent snack',
+        type: 'expense',
+        category_id: 1,
+      });
+      await createTransaction({
+        date: '2020-01-15',
+        amount: 50,
+        description: 'Old snack',
+        type: 'expense',
+        category_id: 1,
+      });
+
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/dashboard/category-trend?category_id=1&months=3',
+      });
+
+      expect(response.statusCode).toBe(200);
+      const body = JSON.parse(response.body);
+      expect(body).toHaveLength(1);
+      expect(Number(body[0].amount)).toBe(30);
+    });
+
+    it('should return 400 when category_id is missing', async () => {
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/dashboard/category-trend',
+      });
+
+      expect(response.statusCode).toBe(400);
+    });
+  });
+
   describe('GET /api/dashboard/monthly-trend', () => {
     it('should return empty array when no transactions exist', async () => {
       const response = await app.inject({

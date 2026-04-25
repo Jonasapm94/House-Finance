@@ -2,6 +2,10 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   BarChart,
   Bar,
+  LineChart,
+  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -12,8 +16,8 @@ import {
   Cell,
   ResponsiveContainer,
 } from 'recharts';
-import { dashboardApi } from '../services/api';
-import type { DashboardSummary } from '../types';
+import { dashboardApi, categoriesApi } from '../services/api';
+import type { Category, DashboardSummary } from '../types';
 import './DashboardPage.css';
 
 const MONTHS_OPTIONS = [
@@ -45,6 +49,16 @@ const MONTH_OPTIONS = [
   { value: 12, label: 'December' },
 ];
 
+const CATEGORY_MONTHS_OPTIONS = MONTHS_OPTIONS.filter((opt) => opt.value > 0);
+
+type ChartType = 'line' | 'bar' | 'area';
+
+const CHART_TYPE_OPTIONS: { value: ChartType; label: string }[] = [
+  { value: 'line', label: 'Line' },
+  { value: 'bar', label: 'Bar' },
+  { value: 'area', label: 'Area' },
+];
+
 interface TrendRow {
   month: string;
   income: number;
@@ -68,6 +82,14 @@ function DashboardPage() {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [trend, setTrend] = useState<TrendRow[]>([]);
   const [breakdown, setBreakdown] = useState<BreakdownRow[]>([]);
+
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
+  const [categoryTrend, setCategoryTrend] = useState<{ month: string; amount: number }[]>(
+    [],
+  );
+  const [categoryChartType, setCategoryChartType] = useState<ChartType>('line');
+  const [categoryMonths, setCategoryMonths] = useState(6);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -128,6 +150,23 @@ function DashboardPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  useEffect(() => {
+    categoriesApi.list().then(setCategories).catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    if (selectedCategoryId === null) {
+      setCategoryTrend([]);
+      return;
+    }
+    dashboardApi
+      .categoryTrend(selectedCategoryId, categoryMonths)
+      .then((data) =>
+        setCategoryTrend(data.map((row) => ({ ...row, amount: Number(row.amount) }))),
+      )
+      .catch(console.error);
+  }, [selectedCategoryId, categoryMonths]);
 
   return (
     <div className="dashboard-page">
@@ -251,6 +290,108 @@ function DashboardPage() {
                   </PieChart>
                 </ResponsiveContainer>
               )}
+            </div>
+          </div>
+
+          {/* Category Monthly Expenses */}
+          <div className="category-trend-section">
+            <div className="chart-card">
+              <div className="category-trend-header">
+                <h3>Category Monthly Expenses</h3>
+                <div className="category-trend-controls">
+                  <select
+                    value={selectedCategoryId ?? ''}
+                    onChange={(e) =>
+                      setSelectedCategoryId(
+                        e.target.value ? Number(e.target.value) : null,
+                      )
+                    }
+                  >
+                    <option value="">Select a category...</option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={categoryMonths}
+                    onChange={(e) => setCategoryMonths(Number(e.target.value))}
+                  >
+                    {CATEGORY_MONTHS_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={categoryChartType}
+                    onChange={(e) => setCategoryChartType(e.target.value as ChartType)}
+                  >
+                    {CHART_TYPE_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              {(() => {
+                if (selectedCategoryId === null)
+                  return (
+                    <div className="no-data">
+                      Select a category to view monthly expenses
+                    </div>
+                  );
+                if (categoryTrend.length === 0)
+                  return <div className="no-data">No expense data for this category</div>;
+
+                const color =
+                  categories.find((c) => c.id === selectedCategoryId)?.color ?? '#6366f1';
+
+                const dataSeriesMap = {
+                  bar: <Bar dataKey="amount" fill={color} name="Expenses" />,
+                  area: (
+                    <Area
+                      type="monotone"
+                      dataKey="amount"
+                      stroke={color}
+                      fill={color}
+                      fillOpacity={0.3}
+                      name="Expenses"
+                      strokeWidth={2}
+                    />
+                  ),
+                  line: (
+                    <Line
+                      type="monotone"
+                      dataKey="amount"
+                      stroke={color}
+                      name="Expenses"
+                      strokeWidth={2}
+                    />
+                  ),
+                };
+
+                const ChartComponent = {
+                  bar: BarChart,
+                  area: AreaChart,
+                  line: LineChart,
+                }[categoryChartType];
+
+                return (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <ChartComponent data={categoryTrend}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip formatter={(v: number) => formatCurrency(v)} />
+                      <Legend />
+                      {dataSeriesMap[categoryChartType]}
+                    </ChartComponent>
+                  </ResponsiveContainer>
+                );
+              })()}
             </div>
           </div>
         </>
